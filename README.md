@@ -1,4 +1,3 @@
-# EE107-Image-Communication
 # EE107 Midterm Report
 
 ## Authors: Jacob Gerson, Asher Milberg, Mason Doshi
