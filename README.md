@@ -26,4 +26,4 @@ Our group landed on the following 1280 x 720 image to process :
 
 ### Phase 3: Modulation (Questions 1-4)
 
-1) 
+1) The SSRC bandwidth is much larger (15 Hz compared to 0.6Hz). THe half-sine wave is a perfect delta function while the SSRC has some sidebands which explains why the bandwidfth is significantly larger than the half-sine bandidth.
