@@ -51,17 +51,19 @@ temp = reshape(binary_data, 8, 64, []);
 % Resulting size: [64 x 8 x N]
 binary_3d = permute(temp, [2, 1, 3]);
 
-%Modulation
-Fs = 1000;
-T = 1; % Duration in seconds
-t = 0 : 1/Fs : 0.5*T;
-N = length(t); % Total number of samples
 
-% Calculate the normalization coefficient
-A = sqrt(2/N); 
-% Create the unit-energy sine wave
-f = 1;
-y = A * sin(2 * pi * f * t);
+
+% Modulation
+sps = 32; % 32 Samples for both the half sine and SRRC 
+T = 1;    % Duration in seconds
+%half-sine pulse with 32 samples for 0 <= t < 1
+t_half_sine = linspace(0, T, sps + 1); 
+t_half_sine = t_half_sine(1:end-1); % Drop the last sample to prevent overlap
+% Modulating sine wave sin(pi*t) for half-sine
+y = sin(pi * t_half_sine); 
+y = y / norm(y); % Normalize energy to 1
+   % Time vector for plotting half-sine
+t = t_half_sine; 
 
 %Plotting the half-sine pulse
 figure;
@@ -71,24 +73,24 @@ xlabel('Time (s)');
 ylabel('Amplitude');
 grid on
 
+% Verifiying Energy should be 1
+energy_y = sum(y.^2);
+fprintf('Total Half Sine Energy: %.4f\n', energy_y);
 
-% Verification: Energy should be 1
-energy = sum(y.^2);
-fprintf('Total Energy: %.4f\n', energy);
-% Assuming 'y' is your signal and 'Fs' is the sampling rate
+%Frequency of half sine pulse
 N = length(y);
 Y = fft(y);
-
 % 1. Compute Magnitude
 % We divide by N to scale it back to the original signal's amplitude
 mag = abs(Y) / N;
+
 
 % 2. Compute Phase
 % 'angle' returns the phase in radians (from -pi to pi)
 phase = angle(Y);
 
 % 3. Create the frequency axis
-f = (0:N-1) * (Fs/N);
+f = (0:N-1) * (sps/N);
 
 % Plotting half sine spectrum
 figure;
@@ -111,6 +113,10 @@ alpha = 0.5;
 k = 6;
 sps = 32; % Samples per symbol
 s = rcosdesign(alpha, 2*k, sps); 
+s = s / norm(s); % Normalize to unit energy
+
+energy_s = sum(s.^2);
+fprintf('Total SRRC Energy: %.4f\n', energy_s);
 
 %SRRC in time domain
 figure;
@@ -151,11 +157,138 @@ ylabel('Phase (rad)', 'FontSize', 11);
 xlabel('Normalized Frequency', 'FontSize', 11);
 grid on
 
-% Calculating Bandwidth for both half sine and SRRC
+% Calculating Bandwidth for both half sine and SRRC. This doesn't support
+% the graphs and hypothesis we get to - i don't think powerbw calculates
+% bandwidth properly (99%) rule as it's clear that the overall sideband of
+% the half sine wave >>>> than the srrc 
 % Calculate the bandwidth using powerbw
-bw = powerbw(y, Fs);
-% Display the results
-disp(['Bandwidth Half-sine: ', num2str(bw), ' Hz']);
-bw = powerbw(s, Fs);
-% Display the results
-disp(['Bandwidth SRRC: ', num2str(bw), ' Hz']);
+% bw = powerbw(y, sps);
+% % Display the results
+% disp(['Bandwidth Half-sine: ', num2str(bw), ' Hz']);
+% bw = powerbw(s, sps); %wwe have to use the samples per sysmbol as the sampling frequency for the filter since it's defined in terms of symbols, not actual time
+% % Display the results
+% disp(['Bandwidth SRRC: ', num2str(bw), ' Hz']);
+
+%Q2: Generate 10 random bits (1,  -1)
+num_bits = 10;
+bits = randi([0 1], 1, num_bits);
+% Map bits to PAM symbols: '1' becomes +1, '0' becomes -1
+% This makes the zero-threshold detection later much easier
+symbols = 2*bits - 1;
+% Upsample the symbols to match the sampling rate (insert 31 zeros between symbols)
+upsampled_symbols = upsample(symbols, sps);
+
+modulated_half_sine = conv(upsampled_symbols, y);
+modulated_srrc = conv(upsampled_symbols, s);
+
+%We modulate the unsampled symbols by doing a convolution "conv" between the unsampled symbols and the pulses (half sine, SRRC) in the time domain. 
+% Time axes for the modulated signals
+% We divide by sps so the x-axis represents bit durations (T=1)
+t_mod_hs = (0:length(modulated_half_sine)-1) / sps;
+t_mod_srrc = (0:length(modulated_srrc)-1) / sps;
+
+%Modulated Half Sine
+figure;
+subplot(2,1,1);
+plot(t_mod_hs, modulated_half_sine, 'b', 'LineWidth', 1.5);
+title(['Half-Sine Modulated Signal | Bits: ' num2str(bits)], 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (Bit Durations)', 'FontSize', 11);
+grid on;
+xlim([0 num_bits]); % Limit view to exactly the 10 sent bits
+
+%Modulated SRRC
+subplot(2,1,2);
+plot(t_mod_srrc, modulated_srrc, 'r', 'LineWidth', 1.5);
+title(['SRRC Modulated Signal | Bits: ' num2str(bits)], 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (Bit Durations)', 'FontSize', 11);
+grid on;
+% SRRC extends past the 10 bits due to its long duration (2*K bit times)
+xlim([0 num_bits + 2*k]); 
+
+
+%Q3 to plot the modulated signals in the frequency domain
+
+%% --- Q3: Spectrum of Modulated Signals ---
+
+% Use zero-padded FFT size as before for smooth plots
+Nfft = 1024; 
+
+% 1. FFT of the Modulated Half-sine Signal
+Mod_HS = fft(modulated_half_sine, Nfft);
+mag_mod_hs = 20*log10(abs(Mod_HS));
+mag_mod_hs = mag_mod_hs - max(mag_mod_hs); % Normalize peak to 0 dB
+
+% 2. FFT of the Modulated SRRC Signal
+Mod_SRRC = fft(modulated_srrc, Nfft);
+mag_mod_srrc = 20*log10(abs(Mod_SRRC));
+mag_mod_srrc = mag_mod_srrc - max(mag_mod_srrc); % Normalize peak to 0 dB
+
+% Create frequency axis up to the Nyquist frequency
+f_mod = (0:Nfft-1) * (sps/Nfft);
+half_idx = 1:Nfft/2;
+
+% -- Plotting Q3 Results --
+figure('Name', 'Q3: Modulated Signal Spectra', 'Position', [200, 200, 800, 600]);
+
+% Half-Sine Modulated Signal Spectrum
+subplot(2,1,1);
+plot(f_mod(half_idx), mag_mod_hs(half_idx), 'b', 'LineWidth', 1.5);
+title('Spectrum of Modulated Half-Sine Signal (10 Random Bits)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Magnitude (dB)', 'FontSize', 11);
+grid on;
+xlim([0 16]); % View up to Nyquist (sps/2)
+ylim([-60 5]);
+
+% SRRC Modulated Signal Spectrum
+subplot(2,1,2);
+plot(f_mod(half_idx), mag_mod_srrc(half_idx), 'r', 'LineWidth', 1.5);
+title('Spectrum of Modulated SRRC Signal (10 Random Bits)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Magnitude (dB)', 'FontSize', 11);
+xlabel('Frequency (Hz)', 'FontSize', 11);
+grid on;
+xlim([0 2]); % Zoom in to see the sharp cutoff
+ylim([-80 5]);
+
+%Q4 Eye Diagrams:
+
+%% --- Q4: Transmit Eye Diagrams ---
+
+% For the eye diagram, we need to generate a much longer sequence of bits
+% to get a statistically significant representation of the eye.
+num_eye_bits = 1000;
+eye_bits = randi([0 1], 1, num_eye_bits);
+eye_symbols = 2*eye_bits - 1;
+upsampled_eye_symbols = upsample(eye_symbols, sps);
+
+% Modulate the long sequence
+mod_eye_hs = conv(upsampled_eye_symbols, y);
+mod_eye_srrc = conv(upsampled_eye_symbols, s);
+
+% Create Eye Diagrams using MATLAB's built-in eyediagram function
+% Parameters:
+% 1. The modulated signal
+% 2. Number of samples per trace. The prompt asks to plot over 1 bit duration.
+%    Since sps=32 (32 samples per bit), we use 32.
+% 3. The period of the signal (T=1).
+% 4. Offset (delay) to center the eye properly.
+
+% --- Half-sine Eye Diagram ---
+% Note: The half-sine pulse starts at t=0. To perfectly center the eye 
+% across a full bit duration, we cut off the first half of the first bit.
+offset_hs = floor(sps / 2);
+eyediagram(mod_eye_hs(offset_hs:end), sps, 1, 0);
+title('Transmit Eye Diagram: Half-sine Pulse', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (s)', 'FontSize', 11);
+
+% --- SRRC Eye Diagram ---
+% Note: The SRRC pulse spans multiple bit durations and is symmetric around
+% its peak (which occurs exactly at t = K bit durations).
+% To center the eye, we need to offset by K * sps samples.
+offset_srrc = k * sps;
+eyediagram(mod_eye_srrc(offset_srrc:end), sps, 1, 0);
+title(sprintf('Transmit Eye Diagram: SRRC Pulse (\\alpha = %.1f, K = %d)', alpha, k), 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (s)', 'FontSize', 11);
