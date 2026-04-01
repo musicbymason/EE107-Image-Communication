@@ -1,8 +1,8 @@
-Image Pre-Processing
-%Preprocessing:
+%Image Pre-Processing
 
 % image into readable data format
-I = imread('msdoshi/Documents/Matlab/macjones.png');
+%I = imread('msdoshi/Documents/Matlab/macjones.png');
+I = imread('macjones.jpg');
 I = rgb2gray(I);
 I_post = im2double(I);
 [row, col] = size(I)
@@ -26,7 +26,7 @@ total_blocks = (m * n) / 64; % 14400 in our case
 dct_3d_array = reshape(temp_permuted, [8, 8, total_blocks]);
 
 
-Conversion to a bit stream
+%Conversion to a bit stream
 
 
 N = 14400; % Determined blocks to send - total number of blocks
@@ -51,8 +51,7 @@ temp = reshape(binary_data, 8, 64, []);
 % Resulting size: [64 x 8 x N]
 binary_3d = permute(temp, [2, 1, 3]);
 
-
-Modulation
+%Modulation
 Fs = 1000;
 T = 1; % Duration in seconds
 t = 0 : 1/Fs : 0.5*T;
@@ -60,11 +59,18 @@ N = length(t); % Total number of samples
 
 % Calculate the normalization coefficient
 A = sqrt(2/N); 
-
 % Create the unit-energy sine wave
 f = 1;
 y = A * sin(2 * pi * f * t);
+
+%Plotting the half-sine pulse
+figure;
 plot(t, y)
+title('Half-sine Pulse (Time Domain)');
+xlabel('Time (s)');
+ylabel('Amplitude');
+grid on
+
 
 % Verification: Energy should be 1
 energy = sum(y.^2);
@@ -84,26 +90,42 @@ phase = angle(Y);
 % 3. Create the frequency axis
 f = (0:N-1) * (Fs/N);
 
-% Plotting
+% Plotting half sine spectrum
+figure;
 subplot(2,1,1)
-plot(f(1 : floor(N/2)), mag(1 : floor(N/2))) % Plotting only the positive frequencies
-title('Magnitude Spectrum')
+plot(f(1 : floor(N/2)), 20*log10(abs(Y(1 : floor(N/2))) / N))
+%plot(f(1 : floor(N/2)), mag(1 : floor(N/2))) % Plotting only the positive frequencies
+title('Half Sine Pulse Magnitude Spectrum (dB)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Magnitude', 'FontSize', 11);
 grid on
 
 subplot(2,1,2)
-plot(f(1 : floor(N/2)), phase(1 : floor(N/2)))
-title('Phase Spectrum (Radians)')
-grid on
+plot(f(1 : floor(N/2)), phase(1 : floor(N/2))) % suggested to replace 2 with y - if problem occurs, replace with 2
+title('Half Sine Pulse Phase Spectrum', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Phase (rad)', 'FontSize', 11);
+xlabel('Frequency (Hz)', 'FontSize', 11); % Added missing xlabel
+grid on;
 
-alpha = 1;
+%SRRC
+alpha = 0.5;
 k = 6;
 sps = 32; % Samples per symbol
 s = rcosdesign(alpha, 2*k, sps); 
 
+%SRRC in time domain
+figure;
+plot((0:length(s)-1)/sps, s, 'LineWidth', 1.5)
+title(sprintf('SRRC Pulse (Time Domain) (\\alpha = %.1f), K = %d', alpha, k));
+xlabel('Time (s)');
+ylabel('Amplitude');
+grid on
+
+%SRRC in frequency domain
+
 % Calculate FFT
 N_s = length(s);
 S = fft(s);
-mags = abs(S); % For filters, we often look at the raw magnitude or dB
+mags = 20*log10(abs(S)); % For filters, we often look at the raw magnitude or dB
 phases = angle(S);
 
 % Frequency axis for the filter
@@ -112,23 +134,24 @@ phases = angle(S);
 fs_filter = sps; 
 freqs = (0:N_s-1) * (fs_filter/N_s);
 
-figure; % Opens a new window so you don't overwrite the sine wave
+figure; % 
 subplot(2,1,1)
 plot(freqs(1:floor(N_s/2)), mags(1:floor(N_s/2)), 'LineWidth', 1.5)
-title('SRRC Magnitude Spectrum (\alpha = alpha), )')
-ylabel('Magnitude')
+title(sprintf('SRRC Magnitude Spectrum (dB) (\\alpha = %.1f)', alpha), 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Magnitude', 'FontSize', 11);
 grid on
 
 subplot(2,1,2)
+
 % Clean up phase noise
 phases(mags < max(mags)*1e-6) = 0; 
 plot(freqs(1:floor(N_s/2)), unwrap(phases(1:floor(N_s/2))))
-title('SRRC Phase Spectrum (Unwrapped)')
-ylabel('Phase (rad)')
-xlabel('Normalized Frequency')
+title('SRRC Phase Spectrum (Unwrapped)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Phase (rad)', 'FontSize', 11);
+xlabel('Normalized Frequency', 'FontSize', 11);
 grid on
 
-% Calculating Bandwidth
+% Calculating Bandwidth for both half sine and SRRC
 % Calculate the bandwidth using powerbw
 bw = powerbw(y, Fs);
 % Display the results
@@ -136,5 +159,3 @@ disp(['Bandwidth Half-sine: ', num2str(bw), ' Hz']);
 bw = powerbw(s, Fs);
 % Display the results
 disp(['Bandwidth SRRC: ', num2str(bw), ' Hz']);
-
-
