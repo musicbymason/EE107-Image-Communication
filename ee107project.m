@@ -2,7 +2,7 @@
 
 % image into readable data format
 %I = imread('msdoshi/Documents/Matlab/macjones.png');
-I = imread('macjones.jpg');
+I = imread('imgs/macjones.jpg');
 I = rgb2gray(I);
 I_post = im2double(I);
 [row, col] = size(I)
