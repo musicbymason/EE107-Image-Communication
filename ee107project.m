@@ -25,9 +25,7 @@ temp_permuted = permute(temp_reshaped, [1, 3, 2, 4]);
 total_blocks = (m * n) / 64; % 14400 in our case
 dct_3d_array = reshape(temp_permuted, [8, 8, total_blocks]);
 
-
 %Conversion to a bit stream
-
 
 N = 14400; % Determined blocks to send - total number of blocks
 
@@ -51,8 +49,6 @@ temp = reshape(binary_data, 8, 64, []);
 % Resulting size: [64 x 8 x N]
 binary_3d = permute(temp, [2, 1, 3]);
 
-
-
 % Modulation
 sps = 32; % 32 Samples for both the half sine and SRRC 
 T = 1;    % Duration in seconds
@@ -64,6 +60,8 @@ y = sin(pi * t_half_sine);
 y = y / norm(y); % Normalize energy to 1
    % Time vector for plotting half-sine
 t = t_half_sine; 
+
+%-------------------------------------QUESTION 1 PLOTTING THE TWO FUNCTIONS---------------------------------------
 
 %Plotting the half-sine pulse
 figure;
@@ -81,9 +79,8 @@ fprintf('Total Half Sine Energy: %.4f\n', energy_y);
 N = length(y);
 Y = fft(y);
 % 1. Compute Magnitude
-% We divide by N to scale it back to the original signal's amplitude
+% divide by N to scale it back to the original signal's amplitude
 mag = abs(Y) / N;
-
 
 % 2. Compute Phase
 % 'angle' returns the phase in radians (from -pi to pi)
@@ -102,10 +99,10 @@ ylabel('Magnitude', 'FontSize', 11);
 grid on
 
 subplot(2,1,2)
-plot(f(1 : floor(N/2)), phase(1 : floor(N/2))) % suggested to replace 2 with y - if problem occurs, replace with 2
+plot(f(1 : floor(N/2)), phase(1 : floor(N/2))) 
 title('Half Sine Pulse Phase Spectrum', 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('Phase (rad)', 'FontSize', 11);
-xlabel('Frequency (Hz)', 'FontSize', 11); % Added missing xlabel
+xlabel('Frequency (Hz)', 'FontSize', 11); 
 grid on;
 
 %SRRC
@@ -128,7 +125,7 @@ grid on
 
 %SRRC in frequency domain
 
-% Calculate FFT
+% FFT Calculation
 N_s = length(s);
 S = fft(s);
 mags = 20*log10(abs(S)); % For filters, we often look at the raw magnitude or dB
@@ -156,6 +153,8 @@ title('SRRC Phase Spectrum (Unwrapped)', 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('Phase (rad)', 'FontSize', 11);
 xlabel('Normalized Frequency', 'FontSize', 11);
 grid on
+
+%-------------------------------------QUESTION 2 MODULATED SIGNALS PLOT 10 RANDOM BITS---------------------------------------
 
 % Calculating Bandwidth for both half sine and SRRC. This doesn't support
 % the graphs and hypothesis we get to - i don't think powerbw calculates
@@ -208,7 +207,7 @@ grid on;
 xlim([0 num_bits + 2*k]); 
 
 
-%Q3 to plot the modulated signals in the frequency domain
+%-------------------------------------QUESTION 3 MODULATED SIGNAL SPECTRUM---------------------------------------
 
 %% --- Q3: Spectrum of Modulated Signals ---
 
@@ -251,9 +250,9 @@ grid on;
 xlim([0 2]); % Zoom in to see the sharp cutoff
 ylim([-80 5]);
 
-%Q4 Eye Diagrams:
 
-%% --- Q4: Transmit Eye Diagrams ---
+
+%-------------------------------------QUESTION 4 EYE DIAGRAM---------------------------------------
 
 % For the eye diagram, we need to generate a much longer sequence of bits
 % to get a statistically significant representation of the eye.

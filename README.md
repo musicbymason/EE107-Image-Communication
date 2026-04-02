@@ -72,6 +72,8 @@ With a random 10 bit stream, below are the time domain modulations using both th
 
 ![](./imgs/Q2/Q2_mod.jpg)
 
+
+
 AI Produced COmmentary Guide
 
   >    Half-Sine Modulation Observation:* In the top plot, the half-sine modulated signal appears as distinct, non-overlapping half-periods of a sine wave. Because the
