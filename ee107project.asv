@@ -364,50 +364,41 @@ ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
 
 
-%------------------ QUESTION 7: Multi-Noise Eye Diagram Analysis ------------------
-noise_variances = [0.00, 0.005, 0.02]; % Clean, Medium, Heavy Noise
-sps = 32; 
-half_symbol = sps / 2; % 16 samples to center the eye
+%------------------------QUESTION 7 Channel Modulation + Noise Eye Diagrams --------------------------
 
-% Create one large figure for all 6 subplots
-figQ7 = figure('Name', 'Q7: Noise Impact Analysis', 'Position', [100, 100, 1000, 1200]);
+% Experiment with noise power values (sigma^2) for finishing Q7
 
-for i = 1:length(noise_variances)
-    sig_pwr = noise_variances(i);
-    std_dev = sqrt(sig_pwr);
-    
-    % 1. Generate and Add Noise
-    n_hs = std_dev * randn(size(channel_output_eye_half_sine));
-    n_srrc = std_dev * randn(size(channel_output_eye_srrc));
-    
-    rx_hs = channel_output_eye_half_sine + n_hs;
-    rx_srrc = channel_output_eye_srrc + n_srrc;
-    
-    % 2. Plot Half-Sine (Left Column)
-    subplot(3, 2, 2*i - 1);
-    % Start index shifted by half_symbol to center the opening
-    start_idx_hs = offset_half_sine + half_symbol;
-    plot(reshape(rx_hs(start_idx_hs : start_idx_hs + (sps*20)-1), sps, []));
-    title(sprintf('Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
-    grid on; ylabel('Amplitude');
-    
-    % 3. Plot SRRC (Right Column)
-    subplot(3, 2, 2*i);
-    % Start index shifted by half_symbol to center the opening
-    start_idx_srrc = offset_srrc + half_symbol;
-    plot(reshape(rx_srrc(start_idx_srrc : start_idx_srrc + (sps*20)-1), sps, []));
-    title(sprintf('SRRC (\\sigma^2 = %.3f)', sig_pwr));
-    grid on;
-end
+noise_power_variance = 0.1; %Configuarable noise power values (variance)
 
-% Labels for bottom row
-subplot(3,2,5); xlabel('Samples per Symbol');
-subplot(3,2,6); xlabel('Samples per Symbol');
+standard_deviation = sqrt(noise_power_variance); %standard deviation
 
-% Save logic
-targetDir = 'imgs/Q7';
-if ~exist(targetDir, 'dir')
-    mkdir(targetDir);
-end
-fullPath = fullfile(targetDir, 'Combined_Noise_Analysis.jpg');
-exportgraphics(figQ7, fullPath, 'Resolution', 300);
+% Generate Gaussian noise matching the size of the received signals
+noise_half_sine = standard_deviation * randn(size(channel_output_eye_half_sine));
+noise_srrc = standard_deviation * randn(size(channel_output_eye_srrc));
+
+% Add noise to the channel output
+rx_noisy_half_sine = channel_output_eye_half_sine + noise_half_sine;
+rx_noisy_srrc = channel_output_eye_srrc + noise_srrc;
+
+% Noisy Half-sine Eye Diagram
+% eyediagram() returns a figure handle which we use to set the window name
+h1 = eyediagram(rx_noisy_half_sine(offset_half_sine:end), sps, 1, 0);
+set(h1, 'Name', sprintf('Q7: Half-sine with Noise Power = %.3f', noise_power_variance));
+title(sprintf('Half-sine Eye Diagram (sigma^2 = %.3f)', noise_power_variance), 'FontSize', 12, 'FontWeight', 'bold');
+
+% Add '.jpg' to the end of the filename
+fullPath = fullfile('imgs/Q7', 'Noisy_Half_Sine.jpg'); 
+
+% Now exportgraphics will know to save it as a JPEG
+exportgraphics(gcf, fullPath, 'Resolution', 300);
+
+% Noisy SRRC Eye Diagram
+h2 = eyediagram(rx_noisy_srrc(offset_srrc:end), sps, 1, 0);
+set(h2, 'Name', sprintf('Q7: SRRC with Noise Power = %.3f', noise_power_variance));
+title(sprintf('SRRC Eye Diagram (sigma^2 = %.3f)', noise_power_variance, 'FontSize', 12, 'FontWeight', 'bold'));
+
+% Add '.jpg' to the end of the filename
+fullPath = fullfile('imgs/Q7', 'Noisy_SRRC.jpg'); 
+
+% Now exportgraphics will know to save it as a JPEG
+exportgraphics(gcf, fullPath, 'Resolution', 300);
