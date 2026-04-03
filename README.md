@@ -60,7 +60,7 @@ Plot the spectrum of the modulated signal (at the output of the pulse shaping fi
 
 Spectra of both the modulated signals:
 
-![](.imgs/Q3/Q3_spectra.jpg)
+![](./imgs/Q3/Q3_spectra.jpg)
 
 ##### Overall Similarities
 
@@ -80,28 +80,28 @@ While the isolated pulses in the previous section produced perfectly smooth spec
 
 Plots and Comments for the Eye Diagrams for both the Half-Sine and SRRC.
 
-![](.imgs/Q3/Q4_hseye.jpg)
+![](./imgs/Q4/Q4_hseye.jpg)
 
 The transmit Half-Sine eye diagram is almost perfectly overlayed on top of each other. It is shifted slightly to the right, but this makes sense as we took one slice of data off the end so the plots were lined up with each other. This eye is wide, which follows the characteristics of the half-sine modulation. In the half-sine the signal period for each bit is entirely seperated and there is no overflow onto the following period from the current bit being transmitted. Since there is little overflow this creates a wide open eye.
 
-![](.imgs/Q4/Q4_srrceye.jpg)
+![](./imgs/Q4/Q4_srrceye.jpg)
 
 The Square Root Raised Cosine (SRRC) eye diagram appears somewhat closed at the transmitter output because an individual SRRC pulse has trailing noise that leaks beyond the bit duration. This does not satisfy Nyquist’s First Criterion for zero Inter-Symbol Interference (ISI). The SRRC’s "tails" do not cross zero at every integer multiple of the bit period ($T$), causing the energy from adjacent bits to leak into the current sampling instant. 
 
 #### Q5: Frequency and Impulse Response of the Channel
 
-![](.imgs/Q5_Channel_Responses.jpg)
+![](./imgs/Q5_Channel_Responses.jpg)
 
 #### Q6: Eye Diagram of Channel Output
 
-![](.imgs/Q6/After_Channel_Eye_HS.jpg)
+![](./imgs/Q6/After_Channel_Eye_HS.jpg)
 
-![](.imgs/Q6/After_Channel_Eye_SRRC.jpg)
+![](./imgs/Q6/After_Channel_Eye_SRRC.jpg)
 
 The eye diagrams at the channel output exhibit significant closure compared to the original transmitted signals, a direct result of Inter-Symbol Interference (ISI) introduced by the channel’s impulse response. Because the channel acts as a non-ideal filter, it causes the energy of each individual pulse to "smear" or spread into adjacent bit periods,  destroying the zero-crossing properties of the Half-Sine and SRRC shapes.
 
 #### Q7: Noisy Eye Diagram of Channel Output
 
-![](.imgs/Q7/Combined_Noise_Analysis.jpg)
+![](./imgs/Q7/Combined_Noise_Analysis.jpg)
 
 The addition of Gaussian noise introduces random vertical displacement to the signal, directly attacking the noise margin of the eye diagram. At lower noise powers ($\sigma^2$), the eye remains identifiable but "fuzzy," indicating a functional but degraded communication link. However, as $\sigma$ increases, the random fluctuations eventually overwhelm the signal's structural transitions (ISI), causing the eye to close completely. In the high-noise scenarios, the diagrams become indistinguishable from one another, as the signal is "swallowed" by the Gaussian distribution. This visualization demonstrates the threshold at which a receiver would fail to differentiate between a '1' and a '0', leading to a significant spike in the Bit Error Rate (BER).
