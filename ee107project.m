@@ -19,7 +19,7 @@ function [binary_data, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, D
 
    [m, n] = size(Scaled_DCT_Image);
    scaled_DCT_dimensions = [m, n];
-   DCT_Image_4D = reshape(Scaled_DCT_Image, [8, m/8, 8, n/8]);
+   DCT_Image_4D = reshape(Scaled_DCT_Image, [8, m/8, 8, n/8]); %
    DCT_Image_Ordered = permute(DCT_Image_4D, [1, 3, 2, 4]);
    total_blocks = (m * n) / 64; % 14400 in our case
    DCT_3D_array = reshape(DCT_Image_Ordered, [8, 8, total_blocks]);
@@ -161,13 +161,13 @@ function [upsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_mod
    %modulate the unsampled symbols by doing a convolution "conv" between the unsampled symbols and the pulses (half sine, SRRC) in the time domain. 
    % Time axes for the modulated signals
    % We divide by sps so the x-axis represents bit durations (T=1)
-   t_mod_hs = (0:length(modulated_half_sine)-1) / sps;
+   t_mod_half_sine = (0:length(modulated_half_sine)-1) / sps;
    t_mod_srrc = (0:length(modulated_srrc)-1) / sps;
 
    %Modulated Half Sine
    figure;
    subplot(2,1,1);
-   plot(t_mod_hs, modulated_half_sine, 'b', 'LineWidth', 1.5);
+   plot(t_mod_half_sine, modulated_half_sine, 'b', 'LineWidth', 1.5);
    title(['Half-Sine Modulated Signal | Bits: ' num2str(bits)], 'FontSize', 12, 'FontWeight', 'bold');
    ylabel('Amplitude', 'FontSize', 11);
    xlabel('Time (Bit Durations)', 'FontSize', 11);
@@ -188,9 +188,9 @@ function [upsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_mod
    Nfft = 1024; 
 
    % 1. FFT of the Modulated Half-sine Signal
-   Mod_HS = fft(modulated_half_sine, Nfft);
-   mag_mod_hs = 20*log10(abs(Mod_HS));
-   mag_mod_hs = mag_mod_hs - max(mag_mod_hs); % Normalize peak to 0 dB
+   Mod_Half_Sine = fft(modulated_half_sine, Nfft);
+   mag_mod_half_sine = 20*log10(abs(Mod_Half_Sine));
+   mag_mod_half_sine = mag_mod_half_sine - max(mag_mod_half_sine); % Normalize peak to 0 dB
 
    % 2. FFT of the Modulated SRRC Signal
    Mod_SRRC = fft(modulated_srrc, Nfft);
@@ -259,7 +259,7 @@ eye_symbols = 2*eye_bits - 1;
 upsampled_eye_symbols = upsample(eye_symbols, sps);
 
 % Modulate the long sequence
-mod_eye_hs = conv(upsampled_eye_symbols, y);
+mod_eye_half_sine = conv(upsampled_eye_symbols, y);
 mod_eye_srrc = conv(upsampled_eye_symbols, s);
 
 % Create Eye Diagrams using MATLAB's built-in eyediagram function
@@ -273,8 +273,8 @@ mod_eye_srrc = conv(upsampled_eye_symbols, s);
 % --- Half-sine Eye Diagram ---
 % Note: The half-sine pulse starts at t=0. To perfectly center the eye 
 % across a full bit duration, we cut off the first half of the first bit.
-offset_hs = floor(sps / 2);
-eyediagram(mod_eye_hs(offset_hs:end), sps, 1, 0);
+offset_half_sine = floor(sps / 2);
+eyediagram(mod_eye_hs(offset_half_sine:end), sps, 1, 0);
 title('Transmit Eye Diagram: Half-sine Pulse', 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
@@ -289,11 +289,9 @@ title(sprintf('Transmit Eye Diagram: SRRC Pulse (\\alpha = %.1f, K = %d)', alpha
 ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
 
-
 %------------------------QUESTION 5 Channel Simulation and Visualization --------------------------
 
 h_taps = [1, 1/2, 3/4, -2/7];
-
 
 % upsample(x, n) inserts n-1 zeros between each element.
 % Using 32 will insert exactly 31 zeros between each tap.
@@ -308,10 +306,9 @@ next_power_of_2 = 2^ceil(log2(current_length));
 % Append zeros to reach a length of 128
 h_vector = [h_upsampled, zeros(1, next_power_of_2 - current_length)];
 
-
 % we convolute this vector with the modulated signals we made in Question 2 to simulate effect of channel on transmitted message
 
-channel_output_hs = conv(modulated_half_sine, h_vector);
+channel_output_half_sine = conv(modulated_half_sine, h_vector);
 channel_output_srrc = conv(modulated_srrc, h_vector);
 
 %% Channel Impulse and Frequency Responses plotted
@@ -347,14 +344,13 @@ xlabel('Normalized Frequency (\times\pi rad/sample)', 'FontSize', 11);
 ylabel('Phase (rad)', 'FontSize', 11);
 grid on;
 
-
 %------------------------QUESTION 6 Channel Modulation Eye Diagrams --------------------------
 % We convolute channel impulse vector with the modulated signals we made in Question 2 to plot the eye diagram of the channel output for each pulse shape.
-channel_output_eye_hs = conv(mod_eye_hs, h_vector);
+channel_output_eye_half_sine = conv(mod_eye_half_sine, h_vector);
 channel_output_eye_srrc = conv(mod_eye_srrc, h_vector);
 
 % Half-sine Eye Diagram after channel
-eyediagram(channel_output_eye_hs(offset_hs:end), sps, 1, 0);
+eyediagram(channel_output_eye_hs(offset_half_sine:end), sps, 1, 0);
 title('Eye Diagram: Half-sine (After Channel)', 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
@@ -365,21 +361,20 @@ title(sprintf('Eye Diagram: SRRC (After Channel) (\alpha = %.1f, K = %d)', alpha
 ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
 
-
 %------------------------QUESTION 7 Channel Modulation + Noise Eye Diagrams --------------------------
 
 % Experiment with noise power values (sigma^2) for finishing Q7
 
-noise_power = 0.1; %Configuarable noise power values
+noise_power_variance = 0.1; %Configuarable noise power values (variance)
 
-sigma = sqrt(noise_power);
+standard_deviation = sqrt(noise_power_variance); %standard deviation
 
 % Generate Gaussian noise matching the size of the received signals
-noise_hs = sigma * randn(size(channel_output_eye_hs));
-noise_srrc = sigma * randn(size(channel_output_eye_srrc));
+noise_half_sine = standard_deviation * randn(size(channel_output_eye_half_sine));
+noise_srrc = standard_deviation * randn(size(channel_output_eye_srrc));
 
 % Add noise to the channel output
-rx_noisy_hs = channel_output_eye_hs + noise_hs;
+rx_noisy_half_sine = channel_output_eye_half_sine + noise_half_sine;
 rx_noisy_srrc = channel_output_eye_srrc + noise_srrc;
 
 % Noisy Half-sine Eye Diagram
