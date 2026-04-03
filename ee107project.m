@@ -249,7 +249,6 @@ s = srrc_pulse(alpha, k, sps); %designs and then plots the SRRC pulse in time an
 %unsampled_symbols is the original 10 random bits mapped to PAM symbols and upsampled (with zeros in between)
 %modulated_half_sine and modulated_srrc are the convolution of the upsampled symbols with the pulses
 
-
 %-------------------------------------QUESTION 4 EYE DIAGRAM---------------------------------------
 
 % For the eye diagram, we need to generate a much longer sequence of bits
