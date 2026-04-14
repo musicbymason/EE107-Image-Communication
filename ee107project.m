@@ -559,3 +559,9 @@ for i = 1:length(noise_cases)
     title(sprintf('Q11 ZF Output: SRRC (%s, \\sigma^2 = %.3f)', noise_labels{i}, sig_pwr), 'FontSize', 12, 'FontWeight', 'bold');
     ylabel('Amplitude'); xlabel('Time (s)');
 end
+
+%------------------ QUESTION 12 & 13: Minimum Mean Square Error ------------------
+
+freq_channel_hs = fft(channel_output_half_sine);
+freq_channel_srrc = fft(ch)
+

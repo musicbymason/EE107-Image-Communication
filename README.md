@@ -208,7 +208,39 @@ For the SRRC we want to sample at 0.3 seconds. (Max Eye Opening)
 
 Q10 answers: We will implement the zero-forcing filter by computing the frequency response of the channel and then create an inverse filter by taking the reciprocal of the channel response in the frequency domain. Then its converted back to the time domain to get the impulse response of the ZF equalizer. The signal is convolved with the equalizer which cancels out channel distortion and ISI.
 
-The frequency response of the zero forcing equalizer has large spikes at frequencies where the channel response is small, since it is the inverse of the channel. This means that the filter applies very high gain at those frequencies. So, the filter is not stable, since the bounded input signals can be amplified and lead to big output values. So, theoretically, the equailer is stable but it  
+The frequency response of the zero forcing equalizer has large spikes at frequencies where the channel amplifies the signal. The impusle response is very long, and decays very slowly. The ZF equalizer is stable because H(f) is never 0, so 1/H(f) is finite at all frequencies. The channel inverse is not always guaranteed to be stable like if a frequency hits 0, then the zero forcing equalizer is infinite at that frequency and is no longer stable.
+
+Here are both the impulse and frequency responses of the zero-forcing filter:
+
+![](./imgs/Q10/Q10.jpg)
 
 Q11 answers: 
+
+Eye diagrams for:
+
+No Noise (Sigma Squared = 0)
+
+
+![](./imgs/Q11/HS_no.jpg)
+
+![](./imgs/Q11/SRRC_no.jpg)
+
+
+Low Noise: (Sigma Squared = 0.005)
+
+![](./imgs/Q11/HS_lil.jpg)
+
+![](./imgs/Q11/SRRC_lil.jpg)
+
+
+
+Heavy Noise: (Sigma Squared = 0.05)
+
+![](./imgs/Q11/HS_heavy.jpg)
+
+![](./imgs/Q11/SRRC_heacy.jpg)
+
+
 #### Q12 & 13: The MMSE Equalizer 
+
+Q12 
