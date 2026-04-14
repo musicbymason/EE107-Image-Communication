@@ -206,6 +206,9 @@ For the SRRC we want to sample at 0.3 seconds. (Max Eye Opening)
 
 #### Q10 & 11: The Zero-Forcing (ZF) Equalizer
 
-We will implement the zero-forcing filter by computing the frequency response of the channel and then create an inverse filter by taking the reciprocal of the channel response in the frequency domain. Then its converted back to the time domain to get the impulse response of the ZF equalizer. The signal is convolved with the equalizer which cancels out channel distortion and ISI.
+Q10 answers: We will implement the zero-forcing filter by computing the frequency response of the channel and then create an inverse filter by taking the reciprocal of the channel response in the frequency domain. Then its converted back to the time domain to get the impulse response of the ZF equalizer. The signal is convolved with the equalizer which cancels out channel distortion and ISI.
 
+The frequency response of the zero forcing equalizer has large spikes at frequencies where the channel response is small, since it is the inverse of the channel. This means that the filter applies very high gain at those frequencies. So, the filter is not stable, since the bounded input signals can be amplified and lead to big output values. So, theoretically, the equailer is stable but it  
+
+Q11 answers: 
 #### Q12 & 13: The MMSE Equalizer 

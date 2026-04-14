@@ -525,20 +525,37 @@ ylabel('Amplitude');
 %Q11:
 %Eye diagram for both pulse shapes after ZF equalization with no noise, with medium noise, and with heavy noise.
 
+noise_cases = [0.00, 0.005, 0.05]; % Clean, Medium, Heavy
+noise_labels = {'No Noise', 'Little Noise', 'Heavy Noise'};
 
-% % We use the original h_taps (NOT upsampled) as per the implementation note
-% H = fft(h_taps, 1024); % Frequency response of the channel
-
-
-
-% H_inv = 1 ./ H; % Invert the frequency response for zero-forcing
-% H_inv(isinf(H_inv)) = 0; % Handle any infinite values due to zeros
-% h_zf = ifft(H_inv); % Get the time-domain impulse response of the ZF equalizer
-% h_zf = h_zf / norm(h_zf); % Normalize to unit energy
-
-% % Convolve the channel output with the ZF equalizer
-% zf_output_half_sine = conv(rx_hs, h_zf);
-% zf_output_srrc = conv(rx_srrc, h_zf);  
-
-
-
+for i = 1:length(noise_cases)
+    sig_pwr = noise_cases(i);
+    std_dev = sqrt(sig_pwr);
+    
+    % 1. Re-generate noisy channel outputs so we aren't relying on leftover loop variables
+    n_hs = std_dev * randn(size(channel_output_eye_half_sine));
+    n_srrc = std_dev * randn(size(channel_output_eye_srrc));
+    
+    rx_hs_noisy = channel_output_eye_half_sine + n_hs;
+    rx_srrc_noisy = channel_output_eye_srrc + n_srrc;
+    
+    % 2. Pass the noisy signals through the Matched Filter 
+    % (Equalizer comes AFTER the matched filter in the block diagram)
+    mf_out_hs = conv(rx_hs_noisy, flip(y));
+    mf_out_srrc = conv(rx_srrc_noisy, flip(s));
+    
+    % 3. Pass through the Zero-Forcing Equalizer using 'filter'
+    zf_out_hs = filter(b_zf, a_zf, mf_out_hs);
+    zf_out_srrc = filter(b_zf, a_zf, mf_out_srrc);
+    
+    % 4. Plot Eye Diagrams using the exact same offsets you used in Q9
+    % Half-Sine Eye
+    eyediagram(zf_out_hs(offset_half_sine:end), sps, 1, 0);
+    title(sprintf('Q11 ZF Output: Half-sine (%s, \\sigma^2 = %.3f)', noise_labels{i}, sig_pwr), 'FontSize', 12, 'FontWeight', 'bold');
+    ylabel('Amplitude'); xlabel('Time (s)');
+    
+    % SRRC Eye
+    eyediagram(zf_out_srrc(offset_srrc:end), sps, 1, 0);
+    title(sprintf('Q11 ZF Output: SRRC (%s, \\sigma^2 = %.3f)', noise_labels{i}, sig_pwr), 'FontSize', 12, 'FontWeight', 'bold');
+    ylabel('Amplitude'); xlabel('Time (s)');
+end
