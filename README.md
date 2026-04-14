@@ -179,12 +179,33 @@ And for the SRRC recieved signal:
 
 ![](./imgs/Q8/matched_out_SRRC.jpg)
 
-
-
+The impulse and frequency reeponses in Q1 represet the ideal pulse shapes and their spectrums. Q8 plots, however, correspond to the matched filter output. So the time domain signals are noisy and don't look anyything like the original pulses. The frequency response graphs are also noisy and have some fluctuations due to the random data and noise. However, the spectral shape is still a lowpass and the SRRC signal is still bandlimited than the half since.
 
 #### Q9: Matched Filter Output - Eye Diagrams for 1 & 2 Bit Durations
 
+Half Sine Matched Filter Output Eye Diagrams: 
+
+1 Bit:
+![](./imgs/Q9/HS_eye_1.jpg)
+
+
+2 Bits:
+![](./imgs/Q9/HS_eye_2.jpg)
+
+For the half sine, we want to sample at .5 seconds. (Max Eye Opening)
+
+SRRC Matched Filter Output Eye Diagrams:
+
+1 Bit: 
+![](./imgs/Q9/SRRC_eye_1.jpg)
+
+2 Bits: 
+![](./imgs/Q9/SRRC_eye_2.jpg)
+
+For the SRRC we want to sample at 0.3 seconds. (Max Eye Opening)
 
 #### Q10 & 11: The Zero-Forcing (ZF) Equalizer
+
+We will implement the zero-forcing filter by computing the frequency response of the channel and then create an inverse filter by taking the reciprocal of the channel response in the frequency domain. Then its converted back to the time domain to get the impulse response of the ZF equalizer. The signal is convolved with the equalizer which cancels out channel distortion and ISI.
 
 #### Q12 & 13: The MMSE Equalizer 

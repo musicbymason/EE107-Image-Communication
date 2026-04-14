@@ -485,10 +485,60 @@ xlabel('Time (s)', 'FontSize', 11);
 %EYe diagram 2 bit duration 
 eyediagram(matched_SRRC(offset_srrc:end), 2*sps, 2, 0);
 title('Matched Filter Output: SRRC(2 Bit Duration)', 'FontSize', 12, 'FontWeight', 'bold');
-
 ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
 
-title(sprintf('Matched Filter Output: SRRC (1 Bit Duration) (\\alpha = %.1f, K = %d)', alpha, k), 'FontSize', 12, 'FontWeight', 'bold'); 
+%------------------ QUESTION 10 & 11: Zero-Forcing Equalizer Solutions ------------------
 
-%------------------ QUESTION 10: Equalizer Solutions ------------------
+%Q10:
+% IMplementing a Zero-Forcing Equalizer
+
+fs = sps / T; 
+b_zf = 1;
+a_zf = h_upsampled;
+
+% Impulse Response for plotting
+% Apply the filter to a unit impulse delta[n]
+impulse = [1; zeros(10000, 1)]; % Use ~10,000 samples for the IIR tail 
+q_zf_n = filter(b_zf, a_zf, impulse);
+
+[Q_zf, f_hz] = freqz(b_zf, a_zf, 2^14, fs); 
+
+%% Plotting Q10
+figure('Name', 'Q10: ZF Equalizer Responses', 'Position', [200, 200, 800, 600]);
+subplot(2,1,1);
+plot(f_hz, 20*log10(abs(Q_zf)), 'LineWidth', 1.5);
+grid on;
+title('Q10: ZF Equalizer Frequency Response (Q_{ZF})', 'FontSize', 12, 'FontWeight', 'bold');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude (dB)'); 
+xlim([0 fs/2]); % Plot up to the Nyquist frequency
+
+% q_zf_n is the impulse response
+subplot(2,1,2);
+plot(0:length(q_zf_n)-1, q_zf_n, 'LineWidth', 1.5);
+grid on;
+title('Q10: ZF Equalizer Impulse Response (q[n])', 'FontSize', 12, 'FontWeight', 'bold');
+xlabel('Sample Index');
+ylabel('Amplitude');
+
+%Q11:
+%Eye diagram for both pulse shapes after ZF equalization with no noise, with medium noise, and with heavy noise.
+
+
+% % We use the original h_taps (NOT upsampled) as per the implementation note
+% H = fft(h_taps, 1024); % Frequency response of the channel
+
+
+
+% H_inv = 1 ./ H; % Invert the frequency response for zero-forcing
+% H_inv(isinf(H_inv)) = 0; % Handle any infinite values due to zeros
+% h_zf = ifft(H_inv); % Get the time-domain impulse response of the ZF equalizer
+% h_zf = h_zf / norm(h_zf); % Normalize to unit energy
+
+% % Convolve the channel output with the ZF equalizer
+% zf_output_half_sine = conv(rx_hs, h_zf);
+% zf_output_srrc = conv(rx_srrc, h_zf);  
+
+
+
