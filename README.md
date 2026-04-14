@@ -168,3 +168,23 @@ The eye diagrams at the channel output exhibit significant closure compared to t
 ![](./imgs/Q7/Combined_Noise_Analysis.jpg)
 
 The addition of Gaussian noise introduces random vertical displacement to the signal, directly attacking the noise margin of the eye diagram. At lower noise powers ($\sigma^2$), the eye remains identifiable but fuzzy, indicating a functional but worsening communication link. However, as $\sigma$ increases, the random fluctuations eventually overwhelm the signal's structural transitions (ISI), causing the eye to close completely. In the high-noise scenarios, the diagrams become indistinguishable from one another, as the signal is ruined by the noise introduced from the Gaussian distribution. This visualization demonstrates the threshold at which a receiver would fail to differentiate between a '1' and a '0', leading to a significant spike in the bit error rate.
+
+#### Q8: Matched Filter Output - Impulse and Frequency Response Graphs
+
+Here are the impulse and frequency response graphs for the half-sine recieved signal:
+
+![](./imgs/Q8/matched_out_HS.jpg)
+
+And for the SRRC recieved signal:
+
+![](./imgs/Q8/matched_out_SRRC.jpg)
+
+
+
+
+#### Q9: Matched Filter Output - Eye Diagrams for 1 & 2 Bit Durations
+
+
+#### Q10 & 11: The Zero-Forcing (ZF) Equalizer
+
+#### Q12 & 13: The MMSE Equalizer 

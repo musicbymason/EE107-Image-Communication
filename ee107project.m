@@ -411,3 +411,84 @@ if ~exist(targetDir, 'dir')
 end
 fullPath = fullfile(targetDir, 'Combined_Noise_Analysis.jpg');
 exportgraphics(figQ7, fullPath, 'Resolution', 300);
+
+
+%------------------ QUESTION 8: The Matched Filter Impulse and Frequency ------------------
+
+%For Half Sine:
+matched_half_sine = conv(rx_hs, flip(y)); % using a matched filter on the half sine
+
+%Impulse and Frequency plots of above signal 
+figure('Name', 'Matched Filter Impulse and Frequency: Half-Sine', 'Position', [200, 200, 800, 600]);
+subplot(2,1,1)
+plot(matched_half_sine, 'LineWidth', 1.5);
+title('Matched Filter Output: Half-sine (Time Domain)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (s)', 'FontSize', 11);
+grid on; 
+
+subplot(2,1,2)
+N_mhs = length(matched_half_sine);
+MHS_FFT = fft(matched_half_sine, 1024);
+f_mhs = (0:1023) * (sps/1024);
+plot(f_mhs(1:512), 20*log10(abs(MHS_FFT(1:512)))); % Plot only the positive frequencies
+title('Matched Filter Output: Half-sine (Magnitude Spectrum)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Magnitude (dB)', 'FontSize', 11);
+xlabel('Frequency (Hz)', 'FontSize', 11);
+grid on;
+
+% For SRRC
+matched_SRRC = conv(rx_srrc, flip(s)); % using a matched filter on the SRRC
+
+%Impulse and Frequency of above signal 
+figure('Name', 'Matched Filter Impulse and Frequency: SRRC', 'Position', [200, 200, 800, 600]);
+subplot(2,1,1)
+plot(matched_SRRC, 'LineWidth', 1.5);
+title('Matched Filter Output: SRRC (Time Domain)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (s)', 'FontSize', 11);
+grid on; 
+
+subplot(2,1,2)
+N_srrc = length(matched_SRRC);
+MSRRC_FFT = fft(matched_SRRC, 1024);
+f_msrrc = (0:1023) * (sps/1024);
+plot(f_msrrc(1:512), 20*log10(abs(MSRRC_FFT(1:512)))); % Plot only the positive frequencies
+title('Matched Filter Output: SRRC (Magnitude Spectrum)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Magnitude (dB)', 'FontSize', 11);
+xlabel('Frequency (Hz)', 'FontSize', 11);
+grid on;
+
+%------------------ QUESTION 9: The Matched Filter Eye Diagrams ------------------
+
+%Half Sine
+
+%Eye Diagram 1 bit duration
+eyediagram(matched_half_sine(offset_half_sine:end), sps, 1, 0);
+title('Matched Filter Output: Half-sine (1 Bit Duration)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (s)', 'FontSize', 11);
+
+%Eye Diagram 2 bit duration
+eyediagram(matched_half_sine(offset_half_sine:end), 2*sps, 2, 0);
+title('Matched Filter Output: Half-sine (2 Bit Duration)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (s)', 'FontSize', 11);
+
+%SRRC
+%Eye Diagram 1 bit duration
+eyediagram(matched_SRRC(offset_srrc:end), sps, 1, 0);
+title('Matched Filter Output: SRRC(1 Bit Duration)', 'FontSize', 12, 'FontWeight', 'bold');
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (s)', 'FontSize', 11);
+
+%EYe diagram 2 bit duration 
+eyediagram(matched_SRRC(offset_srrc:end), 2*sps, 2, 0);
+title('Matched Filter Output: SRRC(2 Bit Duration)', 'FontSize', 12, 'FontWeight', 'bold');
+
+ylabel('Amplitude', 'FontSize', 11);
+xlabel('Time (s)', 'FontSize', 11);
+
+title(sprintf('Matched Filter Output: SRRC (1 Bit Duration) (\\alpha = %.1f, K = %d)', alpha, k), 'FontSize', 12, 'FontWeight', 'bold'); 
+
+%------------------ QUESTION 10: Equalizer Solutions ------------------
