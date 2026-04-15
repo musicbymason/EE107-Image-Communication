@@ -171,37 +171,16 @@ The addition of Gaussian noise introduces random vertical displacement to the si
 
 #### Q8: Matched Filter Output - Impulse and Frequency Response Graphs
 
-Here are the impulse and frequency response graphs for the half-sine recieved signal:
-
-![](./imgs/Q8/matched_out_HS.jpg)
-
-And for the SRRC recieved signal:
-
-![](./imgs/Q8/matched_out_SRRC.jpg)
+![](./imgs/Q8/matched.jpg)
 
 The impulse and frequency reeponses in Q1 represet the ideal pulse shapes and their spectrums. Q8 plots, however, correspond to the matched filter output. So the time domain signals are noisy and don't look anyything like the original pulses. The frequency response graphs are also noisy and have some fluctuations due to the random data and noise. However, the spectral shape is still a lowpass and the SRRC signal is still bandlimited than the half since.
 
 #### Q9: Matched Filter Output - Eye Diagrams for 1 & 2 Bit Durations
 
-Half Sine Matched Filter Output Eye Diagrams: 
 
-1 Bit:
-![](./imgs/Q9/HS_eye_1.jpg)
+![](./imgs/Q9/Matched_Filter_Eyes.jpg)
 
-
-2 Bits:
-![](./imgs/Q9/HS_eye_2.jpg)
-
-For the half sine, we want to sample at .5 seconds. (Max Eye Opening)
-
-SRRC Matched Filter Output Eye Diagrams:
-
-1 Bit: 
-![](./imgs/Q9/SRRC_eye_1.jpg)
-
-2 Bits: 
-![](./imgs/Q9/SRRC_eye_2.jpg)
-
+For the half sine, we want to sample at .5 seconds. (Max Eye Opening).
 For the SRRC we want to sample at 0.3 seconds. (Max Eye Opening)
 
 #### Q10 & 11: The Zero-Forcing (ZF) Equalizer
@@ -243,4 +222,16 @@ Heavy Noise: (Sigma Squared = 0.05)
 
 #### Q12 & 13: The MMSE Equalizer 
 
-Q12 
+Q12:
+
+![](./imgs/Q12/MMSE_freq.jpg)
+
+The Zero-Forcing (ZF) equalizer tries to perfectly invert the channel, but this backfires by creating "ringing" and long messy tails in the impulse response. Because it ignores noise, it amplifies interference at frequencies where the channel is weak, leading to a cluttered output.
+
+The MMSE equalizer is much cleaner because it balances fixing the channel with suppressing noise. Its impulse response shows only the essential spikes—one to capture the main signal and another to cancel the primary echo—without the extra "junk." This makes the MMSE eye diagrams stay significantly more open and stable as the noise increases compared to the ZF results.
+
+Q13:
+
+![](./imgs/Q13/MMSE_eye.jpg)
+
+While significant noise still compromises the results to where it is incredibly hard to see. The MMSE does a better job at clearing up the noise.

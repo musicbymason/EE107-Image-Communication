@@ -413,80 +413,91 @@ fullPath = fullfile(targetDir, 'Combined_Noise_Analysis.jpg');
 exportgraphics(figQ7, fullPath, 'Resolution', 300);
 
 
-%------------------ QUESTION 8: The Matched Filter Impulse and Frequency ------------------
+%------------------ QUESTION 8: Matched Filter Time/Freq Analysis ------------------
+noise_variances = [0.00, 0.005, 0.02]; 
+sps = 32;
 
-%For Half Sine:
-matched_half_sine = conv(rx_hs, flip(y)); % using a matched filter on the half sine
+% Create figure for Time/Freq plots
+figQ8 = figure('Name', 'Q8: Matched Filter Time/Freq Analysis', 'Position', [100, 100, 1200, 1000]);
 
-%Impulse and Frequency plots of above signal 
-figure('Name', 'Matched Filter Impulse and Frequency: Half-Sine', 'Position', [200, 200, 800, 600]);
-subplot(2,1,1)
-plot(matched_half_sine, 'LineWidth', 1.5);
-title('Matched Filter Output: Half-sine (Time Domain)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Amplitude', 'FontSize', 11);
-xlabel('Time (s)', 'FontSize', 11);
-grid on; 
+for i = 1:length(noise_variances)
+    sig_pwr = noise_variances(i);
+    std_dev = sqrt(sig_pwr);
+    
+    % 1. Add Noise and Apply Matched Filter
+    % (Assumes y and s are your pulse shapes for HS and SRRC respectively)
+    rx_hs_noisy = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
+    rx_srrc_noisy = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
+    
+    mf_hs = conv(rx_hs_noisy, flip(y), 'same'); 
+    mf_srrc = conv(rx_srrc_noisy, flip(s), 'same');
+    
+    % 2. Plot Time Domain (Left Column)
+    subplot(3, 2, 2*i - 1);
+    plot(mf_hs(1:sps*20), 'b'); hold on;
+    plot(mf_srrc(1:sps*20), 'r--');
+    title(sprintf('Time Domain (\\sigma^2 = %.3f)', sig_pwr));
+    legend('HS', 'SRRC'); grid on; ylabel('Amplitude');
+    
+    % 3. Plot Frequency Domain (Right Column)
+    subplot(3, 2, 2*i);
+    L = 1024;
+    f = (0:L/2-1) * (sps/L);
+    
+    fft_hs = abs(fft(mf_hs, L));
+    fft_srrc = abs(fft(mf_srrc, L));
+    
+    plot(f, 20*log10(fft_hs(1:L/2)), 'b'); hold on;
+    plot(f, 20*log10(fft_srrc(1:L/2)), 'r--');
+    title(sprintf('Magnitude Spectrum (\\sigma^2 = %.3f)', sig_pwr));
+    grid on; ylabel('dB');
+end
 
-subplot(2,1,2)
-N_mhs = length(matched_half_sine);
-MHS_FFT = fft(matched_half_sine, 1024);
-f_mhs = (0:1023) * (sps/1024);
-plot(f_mhs(1:512), 20*log10(abs(MHS_FFT(1:512)))); % Plot only the positive frequencies
-title('Matched Filter Output: Half-sine (Magnitude Spectrum)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Magnitude (dB)', 'FontSize', 11);
-xlabel('Frequency (Hz)', 'FontSize', 11);
-grid on;
+% Labels for bottom row
+subplot(3,2,5); xlabel('Samples');
+subplot(3,2,6); xlabel('Frequency (normalized)');
 
-% For SRRC
-matched_SRRC = conv(rx_srrc, flip(s)); % using a matched filter on the SRRC
+%exportgraphics(gcf, 'imgs/Q8/matched.jpg', 'Resolution', 300);
 
-%Impulse and Frequency of above signal 
-figure('Name', 'Matched Filter Impulse and Frequency: SRRC', 'Position', [200, 200, 800, 600]);
-subplot(2,1,1)
-plot(matched_SRRC, 'LineWidth', 1.5);
-title('Matched Filter Output: SRRC (Time Domain)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Amplitude', 'FontSize', 11);
-xlabel('Time (s)', 'FontSize', 11);
-grid on; 
+%------------------ QUESTION 9: Matched Filter Eye Diagrams ------------------
+figQ9 = figure('Name', 'Q9: Matched Filter Eye Diagrams', 'Position', [100, 100, 1000, 1200]);
+half_symbol = sps / 2;
 
-subplot(2,1,2)
-N_srrc = length(matched_SRRC);
-MSRRC_FFT = fft(matched_SRRC, 1024);
-f_msrrc = (0:1023) * (sps/1024);
-plot(f_msrrc(1:512), 20*log10(abs(MSRRC_FFT(1:512)))); % Plot only the positive frequencies
-title('Matched Filter Output: SRRC (Magnitude Spectrum)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Magnitude (dB)', 'FontSize', 11);
-xlabel('Frequency (Hz)', 'FontSize', 11);
-grid on;
+for i = 1:length(noise_variances)
+    sig_pwr = noise_variances(i);
+    std_dev = sqrt(sig_pwr);
+    
+    % 1. Re-generate filtered signals
+    rx_hs = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
+    rx_srrc = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
+    
+    mf_hs = conv(rx_hs, flip(y), 'same');
+    mf_srrc = conv(rx_srrc, flip(s), 'same');
+    
+    % 2. Plot Matched Filter Eye - Half-Sine (Left Column)
+    subplot(3, 2, 2*i - 1);
+    start_hs = offset_half_sine + half_symbol;
+    % Reshape into segments of 2*sps to show 2-bit duration
+    eye_hs = reshape(mf_hs(start_hs : start_hs + (sps*2*40)-1), sps*2, []);
+    plot(eye_hs, 'b');
+    title(sprintf('MF Eye: Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
+    grid on; ylabel('Amplitude');
+    
+    % 3. Plot Matched Filter Eye - SRRC (Right Column)
+    subplot(3, 2, 2*i);
+    start_srrc = offset_srrc + half_symbol;
+    eye_srrc = reshape(mf_srrc(start_srrc : start_srrc + (sps*2*40)-1), sps*2, []);
+    plot(eye_srrc, 'r');
+    title(sprintf('MF Eye: SRRC (\\sigma^2 = %.3f)', sig_pwr));
+    grid on;
+end
 
-%------------------ QUESTION 9: The Matched Filter Eye Diagrams ------------------
+% Labels for bottom row
+subplot(3,2,5); xlabel('Samples (2-Bit Duration)');
+subplot(3,2,6); xlabel('Samples (2-Bit Duration)');
 
-%Half Sine
-
-%Eye Diagram 1 bit duration
-eyediagram(matched_half_sine(offset_half_sine:end), sps, 1, 0);
-title('Matched Filter Output: Half-sine (1 Bit Duration)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Amplitude', 'FontSize', 11);
-xlabel('Time (s)', 'FontSize', 11);
-
-%Eye Diagram 2 bit duration
-eyediagram(matched_half_sine(offset_half_sine:end), 2*sps, 2, 0);
-title('Matched Filter Output: Half-sine (2 Bit Duration)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Amplitude', 'FontSize', 11);
-xlabel('Time (s)', 'FontSize', 11);
-
-%SRRC
-%Eye Diagram 1 bit duration
-eyediagram(matched_SRRC(offset_srrc:end), sps, 1, 0);
-title('Matched Filter Output: SRRC(1 Bit Duration)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Amplitude', 'FontSize', 11);
-xlabel('Time (s)', 'FontSize', 11);
-
-%EYe diagram 2 bit duration 
-eyediagram(matched_SRRC(offset_srrc:end), 2*sps, 2, 0);
-title('Matched Filter Output: SRRC(2 Bit Duration)', 'FontSize', 12, 'FontWeight', 'bold');
-ylabel('Amplitude', 'FontSize', 11);
-xlabel('Time (s)', 'FontSize', 11);
+% Optional: Save the figure
+%exportgraphics(figQ9, 'imgs/Q9/Matched_Filter_Eyes.jpg', 'Resolution', 300);
 
 %------------------ QUESTION 10 & 11: Zero-Forcing Equalizer Solutions ------------------
 
@@ -525,11 +536,10 @@ ylabel('Amplitude');
 %Q11:
 %Eye diagram for both pulse shapes after ZF equalization with no noise, with medium noise, and with heavy noise.
 
-noise_cases = [0.00, 0.005, 0.05]; % Clean, Medium, Heavy
 noise_labels = {'No Noise', 'Little Noise', 'Heavy Noise'};
 
-for i = 1:length(noise_cases)
-    sig_pwr = noise_cases(i);
+for i = 1:length(noise_variances)
+    sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
     
     % 1. Re-generate noisy channel outputs so we aren't relying on leftover loop variables
@@ -560,8 +570,90 @@ for i = 1:length(noise_cases)
     ylabel('Amplitude'); xlabel('Time (s)');
 end
 
-%------------------ QUESTION 12 & 13: Minimum Mean Square Error ------------------
+%Q12 - MMSE Equalizer Implementation and Impulse/Frequency plots accross all 3 noise cases
 
-freq_channel_hs = fft(channel_output_half_sine);
-freq_channel_srrc = fft(ch)
+%------------------ QUESTION 12: MMSE Equalizer Frequency Response ------------------
+% Parameters
+N_fft = 1024; 
+H_f = fft(h_vector, N_fft); % Channel frequency response
+f_axis = (0:N_fft-1) * (sps/N_fft);
 
+figMMSE = figure('Name', 'Q12 & 13: MMSE Equalizer Analysis', 'Position', [100, 100, 1200, 900]);
+
+for i = 1:length(noise_variances)
+    sig_pwr = noise_variances(i);
+    
+    % 1. Compute MMSE Filter in Frequency Domain
+    % MMSE Formula: Q(f) = H*(f) / (|H(f)|^2 + Sn/Sx)
+    % Assuming Sx (signal power) is normalized to 1, we use sig_pwr
+    Q_f = conj(H_f) ./ (abs(H_f).^2 + sig_pwr);
+    q_t = ifft(Q_f);
+    
+    % 2. Plot Impulse Response (Left Column)
+    subplot(3, 2, 2*i - 1);
+    stem(real(q_t(1:sps*2)), 'filled', 'MarkerSize', 3);
+    title(sprintf('MMSE Impulse Response (\\sigma^2 = %.3f)', sig_pwr));
+    grid on; ylabel('Amplitude');
+    if i == 3, xlabel('n (samples)'); end
+    
+    % 3. Plot Frequency Response (Right Column)
+    subplot(3, 2, 2*i);
+    plot(f_axis(1:N_fft/2), 20*log10(abs(Q_f(1:N_fft/2))));
+    
+    title(sprintf('MMSE Magnitude (\\sigma^2 = %.3f)', sig_pwr));
+    grid on; ylabel('Magnitude (dB)');
+    if i == 1, legend('MMSE'); end
+    if i == 3, xlabel('Frequency (Hz)'); end
+end
+
+
+exportgraphics(gcf, 'imgs/Q12/MMSE_freq.jpg', 'Resolution', 300);
+
+%Q13 - Eye diagrams for both pulse shapes after MMSE equalization with no noise, with medium noise, and with heavy noise.
+
+%------------------ QUESTION 13: MMSE Eye Diagram Analysis ------------------
+figQ13 = figure('Name', 'Q13: MMSE Equalized Eye Diagrams', 'Position', [100, 100, 1000, 1200]);
+half_symbol = sps / 2;
+
+for i = 1:length(noise_variances)
+    sig_pwr = noise_variances(i);
+    std_dev = sqrt(sig_pwr);
+    
+    % 1. Re-generate Noisy Signals and MMSE Filter
+    n_hs = std_dev * randn(size(channel_output_eye_half_sine));
+    n_srrc = std_dev * randn(size(channel_output_eye_srrc));
+    rx_hs = channel_output_eye_half_sine + n_hs;
+    rx_srrc = channel_output_eye_srrc + n_srrc;
+    
+    % Compute MMSE filter for this noise level
+    Q_f = conj(H_f) ./ (abs(H_f).^2 + sig_pwr);
+    q_t = real(ifft(Q_f));
+    
+    % 2. Apply the MMSE Equalizer (Filtering)
+    % Using 'same' keeps the output vector the same size as the input
+    mmse_out_hs = conv(rx_hs, q_t, 'same');
+    mmse_out_srrc = conv(rx_srrc, q_t, 'same');
+    
+    % 3. Plot MMSE Eye - Half-Sine (Left Column)
+    subplot(3, 2, 2*i - 1);
+    start_hs = offset_half_sine + half_symbol;
+    % Reshape to show segments (adjusting range to ensure it fits)
+    eye_hs_mmse = reshape(mmse_out_hs(start_hs : start_hs + (sps*20)-1), sps, []);
+    plot(eye_hs_mmse, 'b');
+    title(sprintf('MMSE Eye: Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
+    grid on; ylabel('Amplitude');
+    
+    % 4. Plot MMSE Eye - SRRC (Right Column)
+    subplot(3, 2, 2*i);
+    start_srrc = offset_srrc + half_symbol;
+    eye_srrc_mmse = reshape(mmse_out_srrc(start_srrc : start_srrc + (sps*20)-1), sps, []);
+    plot(eye_srrc_mmse, 'r');
+    title(sprintf('MMSE Eye: SRRC (\\sigma^2 = %.3f)', sig_pwr));
+    grid on;
+end
+
+% Labels for bottom row
+subplot(3,2,5); xlabel('Samples per Symbol');
+subplot(3,2,6); xlabel('Samples per Symbol');
+
+exportgraphics(gcf, 'imgs/Q13/MMSE_eye.jpg', 'Resolution', 300);
