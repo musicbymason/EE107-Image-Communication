@@ -235,3 +235,10 @@ Q13:
 ![](./imgs/Q13/MMSE_eye.jpg)
 
 While significant noise still compromises the results to where it is incredibly hard to see. The MMSE does a better job at clearing up the noise.
+
+
+Q14:
+
+Before sending our image of focus through this communication system, let's see if our 10 bit stream survives at the output of the equalizer.
+
+

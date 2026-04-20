@@ -68,34 +68,31 @@ function [y] = half_sine_pulse(sps, T)
    fprintf('Total Half Sine Energy: %.4f\n', energy_y);
 
    %Frequency of half sine pulse
-   N = length(y);
-   Y = fft(y);
-   % 1. Computin Magnitude
-   % divide by N to scale it back to the original signal's amplitude
-   mag = abs(Y) / N;
 
-   % 2. Compute Phase
-   % 'angle' returns the phase in radians (from -pi to pi)
-   phase = angle(Y);
+  Nfft = 4096;                                % large FFT for smooth curve
 
-   % 3. Create the frequency axis
-   f = (0:N-1) * (sps/N);
+Y = fft(y, Nfft);                            % compute FFT
+Y = Y(1:Nfft/2 + 1);                         % one-sided spectrum
 
-   % Plotting half sine spectrum
-   figure;
-   subplot(2,1,1)
-   plot(f(1 : floor(N/2)), 20*log10(abs(Y(1 : floor(N/2))) / N))
-   %plot(f(1 : floor(N/2)), mag(1 : floor(N/2))) % Plotting only the positive frequencies
-   title('Half Sine Pulse Magnitude Spectrum (dB)', 'FontSize', 12, 'FontWeight', 'bold');
-   ylabel('Magnitude', 'FontSize', 11);
-   grid on
+mag_dB = 20*log10(abs(Y) / max(abs(Y)) + eps);  % normalize to 0 dB
+phase = unwrap(angle(Y));                    % unrestrict period
 
-   subplot(2,1,2)
-   plot(f(1 : floor(N/2)), phase(1 : floor(N/2))) 
-   title('Half Sine Pulse Phase Spectrum', 'FontSize', 12, 'FontWeight', 'bold');
-   ylabel('Phase (rad)', 'FontSize', 11);
-   xlabel('Frequency (Hz)', 'FontSize', 11); 
-   grid on;
+f = linspace(0, 1, Nfft/2 + 1);              % normalized frequency (0 → π)
+
+figure;
+subplot(2,1,1)
+plot(f, mag_dB, 'LineWidth', 1.2)
+title('Half-Sine Pulse Magnitude Spectrum (dB)')
+xlabel('Normalized Frequency (×π rad/sample)')
+ylabel('Magnitude (dB)')
+grid on
+
+subplot(2,1,2)
+plot(f, phase, 'LineWidth', 1.2)
+title('Half-Sine Pulse Phase Spectrum')
+xlabel('Normalized Frequency (×π rad/sample)')
+ylabel('Phase (rad)')
+grid on
 end
 
 function [s] = srrc_pulse(alpha, k, sps)
@@ -114,33 +111,30 @@ function [s] = srrc_pulse(alpha, k, sps)
    grid on
 
    %SRRC in frequency domain
-   % FFT Calculation
-   N_s = length(s);
-   S = fft(s);
-   mags = 20*log10(abs(S)); % For filters, we often look at the raw magnitude or dB
-   phases = angle(S);
+   Nfft = 4096;                                % large FFT for smooth curve
 
-   % Frequency axis for the filter
-   % The sampling frequency of the filter is technically 'sps' relative to the symbol rate.
-   fs_filter = sps; 
-   freqs = (0:N_s-1) * (fs_filter/N_s);
+S = fft(s, Nfft);                            % compute FFT
+S = S(1:Nfft/2 + 1);                         % one-sided spectrum
 
-   figure; % 
-   subplot(2,1,1)
-   plot(freqs(1:floor(N_s/2)), mags(1:floor(N_s/2)), 'LineWidth', 1.5)
-   title(sprintf('SRRC Magnitude Spectrum (dB) (\\alpha = %.1f)', alpha), 'FontSize', 12, 'FontWeight', 'bold');
-   ylabel('Magnitude', 'FontSize', 11);
-   grid on
+mag_dB = 20*log10(abs(S) / max(abs(S)) + eps);  % normalize to 0 dB
+phase = unwrap(angle(S));                    % unrestrict period
 
-   subplot(2,1,2)
+f = linspace(0, 1, Nfft/2 + 1);              % normalized frequency (0 → π)
 
-   % Clean up phase noise
-   phases(mags < max(mags)*1e-6) = 0; 
-   plot(freqs(1:floor(N_s/2)), unwrap(phases(1:floor(N_s/2))))
-   title('SRRC Phase Spectrum (Unwrapped)', 'FontSize', 12, 'FontWeight', 'bold');
-   ylabel('Phase (rad)', 'FontSize', 11);
-   xlabel('Normalized Frequency', 'FontSize', 11);
-   grid on;
+figure;
+subplot(2,1,1)
+plot(f, mag_dB, 'LineWidth', 1.2)
+title(sprintf('SRRC Magnitude Spectrum (dB) (α = %.1f)', alpha))
+xlabel('Normalized Frequency (×π rad/sample)')
+ylabel('Magnitude (dB)')
+grid on
+
+subplot(2,1,2)
+plot(f, phase, 'LineWidth', 1.2)
+title('SRRC Phase Spectrum')
+xlabel('Normalized Frequency (×π rad/sample)')
+ylabel('Phase (rad)')
+grid on
 
 end
 
@@ -248,6 +242,8 @@ s = srrc_pulse(alpha, k, sps); %designs and then plots the SRRC pulse in time an
 [unsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_modulation(sps, k, s, y); 
 %unsampled_symbols is the original 10 random bits mapped to PAM symbols and upsampled (with zeros in between)
 %modulated_half_sine and modulated_srrc are the convolution of the upsampled symbols with the pulses
+
+
 
 %-------------------------------------QUESTION 4 EYE DIAGRAM---------------------------------------
 
@@ -535,14 +531,16 @@ ylabel('Amplitude');
 
 %Q11:
 %Eye diagram for both pulse shapes after ZF equalization with no noise, with medium noise, and with heavy noise.
-
 noise_labels = {'No Noise', 'Little Noise', 'Heavy Noise'};
+
+% FIX: Assign the newly created figure to the variable 'figure_zf_10bit'
+figure_zf_10bit = figure('Name', 'Q11: ZF Time-Domain Output (10-bit stream)', 'Position', [150, 150, 800, 1000]); 
 
 for i = 1:length(noise_variances)
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
     
-    % 1. Re-generate noisy channel outputs so we aren't relying on leftover loop variables
+    % 1. Re-generate noisy channel outputs
     n_hs = std_dev * randn(size(channel_output_eye_half_sine));
     n_srrc = std_dev * randn(size(channel_output_eye_srrc));
     
@@ -550,7 +548,6 @@ for i = 1:length(noise_variances)
     rx_srrc_noisy = channel_output_eye_srrc + n_srrc;
     
     % 2. Pass the noisy signals through the Matched Filter 
-    % (Equalizer comes AFTER the matched filter in the block diagram)
     mf_out_hs = conv(rx_hs_noisy, flip(y));
     mf_out_srrc = conv(rx_srrc_noisy, flip(s));
     
@@ -558,18 +555,69 @@ for i = 1:length(noise_variances)
     zf_out_hs = filter(b_zf, a_zf, mf_out_hs);
     zf_out_srrc = filter(b_zf, a_zf, mf_out_srrc);
     
-    % 4. Plot Eye Diagrams using the exact same offsets you used in Q9
-    % Half-Sine Eye
+    % 4. Plot Eye Diagrams
+    % Note: eyediagram() inherently spawns a NEW window for each call.
+    % You will get 6 individual eye diagram windows popping up from this loop.
     eyediagram(zf_out_hs(offset_half_sine:end), sps, 1, 0);
     title(sprintf('Q11 ZF Output: Half-sine (%s, \\sigma^2 = %.3f)', noise_labels{i}, sig_pwr), 'FontSize', 12, 'FontWeight', 'bold');
     ylabel('Amplitude'); xlabel('Time (s)');
     
-    % SRRC Eye
     eyediagram(zf_out_srrc(offset_srrc:end), sps, 1, 0);
     title(sprintf('Q11 ZF Output: SRRC (%s, \\sigma^2 = %.3f)', noise_labels{i}, sig_pwr), 'FontSize', 12, 'FontWeight', 'bold');
     ylabel('Amplitude'); xlabel('Time (s)');
-end
+    
+    % =====================================================================
+    % 5. Plotting for the 10-bit stream
+    % =====================================================================
+    % Switch back to the 10-bit figure so we don't draw on the eye diagrams
+    figure(figure_zf_10bit); 
+    
+    % Process the 10-bit stream with the same noise and ZF equalizer
+    q11_hs_channel_out = conv(modulated_half_sine, h_vector, 'same');
+    q11_srrc_channel_out = conv(modulated_srrc, h_vector, 'same');
+    
+    n_hs_10bit = std_dev * randn(size(q11_hs_channel_out));
+    n_srrc_10bit = std_dev * randn(size(q11_srrc_channel_out));
+    
+    rx_hs_noisy_10bit = q11_hs_channel_out + n_hs_10bit;
+    rx_srrc_noisy_10bit = q11_srrc_channel_out + n_srrc_10bit;
+    
+    mf_out_hs_10bit = conv(rx_hs_noisy_10bit, flip(y), 'same');
+    mf_out_srrc_10bit = conv(rx_srrc_noisy_10bit, flip(s), 'same');
+    
+    zf_out_hs_10bit = filter(b_zf, a_zf, mf_out_hs_10bit);
+    zf_out_srrc_10bit = filter(b_zf, a_zf, mf_out_srrc_10bit);
 
+    % Draw the subplots on the active figure_zf_10bit window
+    subplot(3, 1, i);
+    plot(zf_out_hs_10bit, 'b', 'LineWidth', 1.2);
+    hold on;
+    plot(zf_out_srrc_10bit, 'r--', 'LineWidth', 1.2);
+    
+    % --- Visualization Improvement ---
+    % Define the window to plot to see the 10 bits clearly
+    num_bits_to_plot = 10;
+    % Start plotting after the main SRRC pulse delay to skip transients
+    plot_start = k * sps; 
+    plot_duration = (num_bits_to_plot + 2) * sps; % Show 10 bits + a 2-bit margin
+    
+    % Add stem markers at the ideal sampling instants for the SRRC pulse
+    % The sample point should be in the middle of the symbol period
+    sampling_instants = (plot_start + sps/2) : sps : (plot_start + num_bits_to_plot*sps);
+    
+    % Ensure sampling_instants do not go beyond the signal length
+    valid_instants = sampling_instants(sampling_instants <= length(zf_out_srrc_10bit));
+    symbol_amplitudes = zf_out_srrc_10bit(valid_instants);
+    stem(valid_instants, symbol_amplitudes, 'r*', 'LineWidth', 1.5);
+
+    hold off;
+    title(sprintf('ZF Output (10-bit stream) for %s (\\sigma^2 = %.3f)', noise_labels{i}, sig_pwr));
+    legend('Half-Sine', 'SRRC', 'SRRC Sample Instants');
+    ylabel('Amplitude');
+    grid on;
+    xlim([plot_start, plot_start + plot_duration]); % Zoom in on the data
+end
+xlabel('Samples');
 %Q12 - MMSE Equalizer Implementation and Impulse/Frequency plots accross all 3 noise cases
 
 %------------------ QUESTION 12: MMSE Equalizer Frequency Response ------------------
@@ -611,7 +659,10 @@ exportgraphics(gcf, 'imgs/Q12/MMSE_freq.jpg', 'Resolution', 300);
 
 %Q13 - Eye diagrams for both pulse shapes after MMSE equalization with no noise, with medium noise, and with heavy noise.
 
-%------------------ QUESTION 13: MMSE Eye Diagram Analysis ------------------
+% -------------------------------------------------------------------------
+% Setup figures BEFORE the loop
+% -------------------------------------------------------------------------
+figTime_MMSE_10bit = figure('Name', 'Q13: MMSE Time-Domain (10-bit stream)', 'Position', [200, 200, 800, 1000]);
 figQ13 = figure('Name', 'Q13: MMSE Equalized Eye Diagrams', 'Position', [100, 100, 1000, 1200]);
 half_symbol = sps / 2;
 
@@ -619,43 +670,105 @@ for i = 1:length(noise_variances)
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
     
-    % 1. Re-generate Noisy Signals and MMSE Filter
-    n_hs = std_dev * randn(size(channel_output_eye_half_sine));
-    n_srrc = std_dev * randn(size(channel_output_eye_srrc));
-    rx_hs = channel_output_eye_half_sine + n_hs;
-    rx_srrc = channel_output_eye_srrc + n_srrc;
-    
-    % Compute MMSE filter for this noise level
+    % --- Compute MMSE filter for this noise level ---
     Q_f = conj(H_f) ./ (abs(H_f).^2 + sig_pwr);
     q_t = real(ifft(Q_f));
     
-    % 2. Apply the MMSE Equalizer (Filtering)
-    % Using 'same' keeps the output vector the same size as the input
-    mmse_out_hs = conv(rx_hs, q_t, 'same');
-    mmse_out_srrc = conv(rx_srrc, q_t, 'same');
+    % =====================================================================
+    % 1. Analysis for 1000-bit stream (for Eye Diagrams)
+    % =====================================================================
+    n_hs_eye = std_dev * randn(size(channel_output_eye_half_sine));
+    n_srrc_eye = std_dev * randn(size(channel_output_eye_srrc));
+    rx_hs_eye = channel_output_eye_half_sine + n_hs_eye;
+    rx_srrc_eye = channel_output_eye_srrc + n_srrc_eye;
     
-    % 3. Plot MMSE Eye - Half-Sine (Left Column)
+    % FIX: Apply Matched Filter before MMSE Equalizer
+    mf_out_hs_eye = conv(rx_hs_eye, flip(y), 'same');
+    mf_out_srrc_eye = conv(rx_srrc_eye, flip(s), 'same');
+    
+    % Apply MMSE Equalizer
+    mmse_out_hs_eye = conv(mf_out_hs_eye, q_t, 'same');
+    mmse_out_srrc_eye = conv(mf_out_srrc_eye, q_t, 'same');
+
+    % =====================================================================
+    % 2. Analysis for 10-bit stream (for Time-Domain Plot)
+    % =====================================================================
+    % (Assuming modulated_half_sine and modulated_srrc are 10-bit streams)
+    q13_hs_channel_out = conv(modulated_half_sine, h_vector, 'same');
+    q13_srrc_channel_out = conv(modulated_srrc, h_vector, 'same');
+    
+    n_hs_10bit = std_dev * randn(size(q13_hs_channel_out));
+    n_srrc_10bit = std_dev * randn(size(q13_srrc_channel_out));
+    
+    rx_hs_10bit = q13_hs_channel_out + n_hs_10bit;
+    rx_srrc_10bit = q13_srrc_channel_out + n_srrc_10bit;
+
+    % Apply Matched Filter then MMSE Equalizer
+    mmse_out_hs_10bit = conv(conv(rx_hs_10bit, flip(y), 'same'), q_t, 'same');
+    mmse_out_srrc_10bit = conv(conv(rx_srrc_10bit, flip(s), 'same'), q_t, 'same');
+
+    % =====================================================================
+    % PLOT 1: TIME DOMAIN OUTPUTS (10-bit stream)
+    % =====================================================================
+    figure(figTime_MMSE_10bit);
+    subplot(3, 1, i);
+    % FIX: Plot the whole array safely, then use xlim to limit the view
+    plot(mmse_out_hs_10bit, 'b', 'LineWidth', 1.2);
+    hold on;
+    plot(mmse_out_srrc_10bit, 'r--', 'LineWidth', 1.2);
+    title(sprintf('MMSE Time-Domain (10-bit stream, \\sigma^2 = %.3f)', sig_pwr));
+    legend('Half-Sine', 'SRRC');
+    xlabel('Samples'); ylabel('Amplitude');
+    grid on; 
+    xlim([0 min(500, length(mmse_out_hs_10bit))]); % Safely bounds the x-axis
+    hold off;
+    
+    % =====================================================================
+    % PLOT 2: EYE DIAGRAMS (1000-bit stream)
+    % =====================================================================
+    figure(figQ13);
+    
     subplot(3, 2, 2*i - 1);
     start_hs = offset_half_sine + half_symbol;
-    % Reshape to show segments (adjusting range to ensure it fits)
-    eye_hs_mmse = reshape(mmse_out_hs(start_hs : start_hs + (sps*20)-1), sps, []);
+    eye_hs_mmse = reshape(mmse_out_hs_eye(start_hs : start_hs + (sps*20)-1), sps, []);
     plot(eye_hs_mmse, 'b');
     title(sprintf('MMSE Eye: Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
     grid on; ylabel('Amplitude');
     
-    % 4. Plot MMSE Eye - SRRC (Right Column)
     subplot(3, 2, 2*i);
     start_srrc = offset_srrc + half_symbol;
-    eye_srrc_mmse = reshape(mmse_out_srrc(start_srrc : start_srrc + (sps*20)-1), sps, []);
+    eye_srrc_mmse = reshape(mmse_out_srrc_eye(start_srrc : start_srrc + (sps*20)-1), sps, []);
     plot(eye_srrc_mmse, 'r');
     title(sprintf('MMSE Eye: SRRC (\\sigma^2 = %.3f)', sig_pwr));
     grid on;
 end
 
-% Labels for bottom row
+% =====================================================================
+% Final Formatting and Export
+% =====================================================================
+figure(figQ13); 
 subplot(3,2,5); xlabel('Samples per Symbol');
 subplot(3,2,6); xlabel('Samples per Symbol');
 
-exportgraphics(gcf, 'imgs/Q13/MMSE_eye.jpg', 'Resolution', 300);
+% Optional: Ensure directories exist before exporting
+if ~exist('imgs/Q13', 'dir'), mkdir('imgs/Q13'); end
 
-%------------------ QUESTION 13: MMSE Eye Diagram Analysis ------------------
+exportgraphics(figQ13, 'imgs/Q13/MMSE_eye.jpg', 'Resolution', 300);
+
+figure(figTime_MMSE_10bit);
+exportgraphics(figTime_MMSE_10bit, 'imgs/Q13/MMSE_time_10bit.jpg', 'Resolution', 300);
+
+
+
+
+%------------------ QUESTION 14: Displaying the Result ------------------
+%Construct a matrix of bits with the nth row containing eight entries corresponding to the eight bits of the nth received and detected pixel.
+
+
+
+%then we'll Now convert the detected matrix to a vector of integers with bi2de and use reshape and permute to place the received 8 by 8 DCT blocks into the proper place in the full image.
+
+
+
+%Invert the DCT blocks using blkproc and rescale the resulting image using the inverse of the linear scaling from the pre-processing stage
+
