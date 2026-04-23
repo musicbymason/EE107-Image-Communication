@@ -61,15 +61,6 @@ function [reconstructed_image] = postprocess_image(received_bits, image_dimensio
     m = scaled_DCT_dimensions(1);
     n = scaled_DCT_dimensions(2);
     
-    % DCT_3D_array is [8 x 8 x total_blocks]
-    % We need to reverse the reshape/permute from preprocess
-    % DCT_Image_Ordered = reshape(DCT_3D_array, [8, 8, m/8, n/8]);
-    % DCT_Image_4D = permute(DCT_Image_Ordered, [1, 3, 2, 4]); 
-    % Wait, looking at preprocess:
-    % DCT_Image_4D = reshape(Scaled_DCT_Image, [8, m/8, 8, n/8]); 
-    % DCT_Image_Ordered = permute(DCT_Image_4D, [1, 3, 2, 4]);
-    % DCT_3D_array = reshape(DCT_Image_Ordered, [8, 8, total_blocks]);
-    
     DCT_Image_Ordered = reshape(DCT_3D_array, [8, 8, m/8, n/8]);
     DCT_Image_4D = permute(DCT_Image_Ordered, [1, 3, 2, 4]);
     Scaled_DCT_Image = reshape(DCT_Image_4D, [m, n]);
@@ -78,7 +69,7 @@ function [reconstructed_image] = postprocess_image(received_bits, image_dimensio
     reconstructed_image = blockproc(Scaled_DCT_Image, [8 8], @(block_struct) idct2(block_struct.data));
 end
 
-%Modulation Simulation: Half Sine
+%Modulation Half Sine
 function [y] = half_sine_pulse(sps, T)
    t_half_sine = linspace(0, T, sps + 1); 
    t_half_sine = t_half_sine(1:end-1); % Drop the last sample to prevent overlap
@@ -462,7 +453,7 @@ fullPath = fullfile(targetDir, 'Combined_Noise_Analysis.jpg');
 exportgraphics(figQ7, fullPath, 'Resolution', 300);
 
 
-%------------------ QUESTION 8: Matched Filter Time/Freq Analysis ------------------
+%- Q8: Matched Filter Time/Freq Analysis
 noise_variances = [0.00, 0.005, 0.02]; 
 sps = 32;
 
@@ -473,8 +464,7 @@ for i = 1:length(noise_variances)
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
     
-    % 1. Add Noise and Apply Matched Filter
-    % (Assumes y and s are your pulse shapes for HS and SRRC respectively)
+    % Add Noise and Apply Matched Filter
     rx_hs_noisy = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
     rx_srrc_noisy = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
     
@@ -488,7 +478,7 @@ for i = 1:length(noise_variances)
     title(sprintf('Time Domain (\\sigma^2 = %.3f)', sig_pwr));
     legend('HS', 'SRRC'); grid on; ylabel('Amplitude');
     
-    % 3. Plot Frequency Domain (Right Column)
+    %Plot Frequency Domain (Right Column)
     subplot(3, 2, 2*i);
     L = 1024;
     f = (0:L/2-1) * (sps/L);
@@ -547,7 +537,7 @@ subplot(3,2,6); xlabel('Samples (2-Bit Duration)');
 
 exportgraphics(figQ9, 'imgs/Q9/Matched_Filter_Eyes.jpg', 'Resolution', 300);
 
-%------------------ QUESTION 10 & 11: Zero-Forcing Equalizer Solutions ------------------
+%-10 & 11: Zero-Forcing Equalizer 
 
 %Q10:
 % IMplementing a Zero-Forcing Equalizer
@@ -595,10 +585,7 @@ figQ11_Eyes = figure('Name', 'Q11: ZF Equalized Eye Diagrams', 'Position', [100,
 % FIX: Dynamically track how many noise variances there are to prevent subplot crashing
 num_vars = length(noise_variances); 
 
-% =====================================================================
-% PRE-COMPUTE: Noise-free channel outputs (10-bit stream)
-% FIX: Moved outside the loop because they don't change with noise!
-% =====================================================================
+% PRE-COMPUTE: Noise-free channel outputs (10-bit stream) that don't change across noises
 q11_hs_channel_out = conv(modulated_half_sine, h_vector, 'same');
 q11_srrc_channel_out = conv(modulated_srrc, h_vector, 'same');
 
@@ -613,15 +600,15 @@ for i = 1:num_vars
     rx_hs_noisy = channel_output_eye_half_sine + n_hs;
     rx_srrc_noisy = channel_output_eye_srrc + n_srrc;
     
-    % 2. Pass the noisy signals through the Matched Filter 
+    % noisy signals through the Matched Filter 
     mf_out_hs = conv(rx_hs_noisy, flip(y));
     mf_out_srrc = conv(rx_srrc_noisy, flip(s));
     
-    % 3. Pass through the Zero-Forcing Equalizer using 'filter'
+    % Pass through the Zero-Forcing Equalizer using filter()
     zf_out_hs = filter(b_zf, a_zf, mf_out_hs);
     zf_out_srrc = filter(b_zf, a_zf, mf_out_srrc);
     
-    % 4. Plot Eye Diagrams (Unified Compact Figure)
+    % Eye Diagrams 
     figure(figQ11_Eyes);
     
     subplot(num_vars, 2, 2*i - 1);
@@ -641,9 +628,6 @@ for i = 1:num_vars
     grid on;
     ylim([-1.5 1.5]);
     
-    % =====================================================================
-    % 5. Plotting for the 10-bit stream
-    % =====================================================================
     % Switch back to the 10-bit figure so we don't draw on the eye diagrams
     figure(figure_zf_10bit); 
     
@@ -692,8 +676,6 @@ subplot(num_vars, 2, num_vars*2); xlabel('Samples (2 Symbol Periods)');
 exportgraphics(figQ11_Eyes, 'imgs/Q11/ZF_Eyes_Combined.jpg', 'Resolution', 300);
 
 %Q12 - MMSE Equalizer Implementation and Impulse/Frequency plots accross all 3 noise cases
-
-%------------------ QUESTION 12: MMSE Equalizer Frequency Response ------------------
 % Parameters
 N_fft = 1024; 
 H_f = fft(h_vector, N_fft); % Channel frequency response
@@ -704,7 +686,7 @@ figMMSE = figure('Name', 'Q12 & 13: MMSE Equalizer Analysis', 'Position', [100, 
 for i = 1:length(noise_variances)
     sig_pwr = noise_variances(i);
     
-    % 1. Compute MMSE Filter in Frequency Domain
+    %  MMSE Filter in Frequency Domain
     % MMSE Formula: Q(f) = H*(f) / (|H(f)|^2 + Sn/Sx)
     % Assuming Sx (signal power) is normalized to 1, we use sig_pwr
     Q_f = conj(H_f) ./ (abs(H_f).^2 + sig_pwr);
@@ -727,24 +709,19 @@ for i = 1:length(noise_variances)
     if i == 3, xlabel('Frequency (Hz)'); end
 end
 
-
 exportgraphics(gcf, 'imgs/Q12/MMSE_freq.jpg', 'Resolution', 300);
 
 %Q13 - Eye diagrams for both pulse shapes after MMSE equalization with no noise, with medium noise, and with heavy noise.
-% -------------------------------------------------------------------------
 % Setup figures BEFORE the loop
-% -------------------------------------------------------------------------
+
 figTime_MMSE_10bit = figure('Name', 'Q13: MMSE Time-Domain (10-bit stream)', 'Position', [200, 200, 800, 1000]);
 figQ13 = figure('Name', 'Q13: MMSE Equalized Eye Diagrams', 'Position', [100, 100, 1000, 1200]);
 half_symbol = sps / 2;
 
-% FIX: Dynamically track how many noise variances there are to prevent subplot crashing
+% track noise variances there are to prevent subplot crashing
 num_vars = length(noise_variances); 
 
-% =====================================================================
 % PRE-COMPUTE: Noise-free channel outputs 
-% FIX: Moved outside the loop because they don't change with noise!
-% =====================================================================
 % (Assuming modulated_half_sine and modulated_srrc are 10-bit streams)
 q13_hs_channel_out = conv(modulated_half_sine, h_vector, 'same');
 q13_srrc_channel_out = conv(modulated_srrc, h_vector, 'same');
@@ -753,36 +730,31 @@ for i = 1:num_vars
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
     
-    % --- Compute MMSE filter for this noise level ---
-    % Note: conj(H_f) acts as the matched filter in the frequency domain
+    % MMSE filter for this noise level 
+    %  conj(H_f) acts as the matched filter in the frequency domain
     Q_f = conj(H_f) ./ (abs(H_f).^2 + sig_pwr);
     
-    % FIX: Apply fftshift to properly center the time-domain impulse response
+    %  fftshift to properly center the time-domain impulse response
     q_t = fftshift(real(ifft(Q_f)));
     
-    % =====================================================================
-    % 1. Analysis for 1000-bit stream (for Eye Diagrams)
-    % =====================================================================
+    % Analysis for 1000-bit stream (for Eye Diagrams)
     n_hs_eye = std_dev * randn(size(channel_output_eye_half_sine));
     n_srrc_eye = std_dev * randn(size(channel_output_eye_srrc));
     rx_hs_eye = channel_output_eye_half_sine + n_hs_eye;
     rx_srrc_eye = channel_output_eye_srrc + n_srrc_eye;
     
-    % FIX: Removed the double matched filtering. 
     % Convolve directly with q_t since it already contains the matched filter.
     mmse_out_hs_eye = conv(rx_hs_eye, q_t, 'same');
     mmse_out_srrc_eye = conv(rx_srrc_eye, q_t, 'same');
 
-    % =====================================================================
-    % 2. Analysis for 10-bit stream (for Time-Domain Plot)
-    % =====================================================================
+    % Analysis for 10-bit stream (for Time-Domain Plot)
     n_hs_10bit = std_dev * randn(size(q13_hs_channel_out));
     n_srrc_10bit = std_dev * randn(size(q13_srrc_channel_out));
     
     rx_hs_10bit = q13_hs_channel_out + n_hs_10bit;
     rx_srrc_10bit = q13_srrc_channel_out + n_srrc_10bit;
 
-    % FIX: Apply only the MMSE Equalizer
+    %Apply only the MMSE Equalizer
     mmse_out_hs_10bit = conv(rx_hs_10bit, q_t, 'same');
     mmse_out_srrc_10bit = conv(rx_srrc_10bit, q_t, 'same');
 
@@ -949,10 +921,6 @@ end
 % Save the final grid
 exportgraphics(fig_all, 'imgs/Q14/Final_Result.jpg', 'Resolution', 300);
 fprintf('Full simulation complete. Results saved to imgs/Q14/Final_Result.jpg\n');
-
-% =========================================================================
-% ADDITIONAL QUESTIONS 15 - 21
-% =========================================================================
 
 %% Q15: Critical SNR Threshold Discovery
 fprintf('\n--- Running Q15: SNR Threshold Analysis ---\n');

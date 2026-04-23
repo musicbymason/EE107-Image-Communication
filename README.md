@@ -306,8 +306,11 @@ The **SRRC pulse** is the superior choice for modern digital communications.
 
 We tested the system under two additional wireless channel models:
 1.  **Outdoor Channel ($h_1$):** Characterized by long delays (up to 25 bits), representing reflections from distant buildings. This channel has a higher total **power gain** ($\sum |h[n]|^2 \approx 1.745$), but the severe delay spread makes equalization significantly more challenging.
-2.  **Indoor Channel ($h_2$):** Characterized by shorter, rapidly decaying echoes. While it has a lower power gain ($\approx 1.234$), its performance is generally better because the ISI is "short-lived" and more easily corrected by the MMSE equalizer.
+![](./imgs/Q21/Recovered_Outdoor.jpg)
 
-Our system successfully recovered images in both environments, though the outdoor channel required a more robust MMSE approach to handle the deep frequency fades caused by the long-delay reflections.
+
+2.  **Indoor Channel ($h_2$):** Characterized by shorter, rapidly decaying echoes. While it has a lower power gain ($\approx 1.234$), its performance is generally better because the ISI is "short-lived" and more easily corrected by the MMSE equalizer.
+![](./imgs/Q21/Recovered_Indoor.jpg)
+
 
 
