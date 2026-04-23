@@ -589,6 +589,9 @@ noise_labels = {'No Noise', 'Little Noise', 'Heavy Noise'};
 % FIX: Assign the newly created figure to the variable 'figure_zf_10bit'
 figure_zf_10bit = figure('Name', 'Q11: ZF Time-Domain Output (10-bit stream)', 'Position', [150, 150, 800, 1000]); 
 
+% ADDED: Unified figure for all eye diagrams to make them more compact
+figQ11_Eyes = figure('Name', 'Q11: ZF Equalized Eye Diagrams', 'Position', [100, 100, 1000, 1200]);
+
 % FIX: Dynamically track how many noise variances there are to prevent subplot crashing
 num_vars = length(noise_variances); 
 
@@ -618,23 +621,25 @@ for i = 1:num_vars
     zf_out_hs = filter(b_zf, a_zf, mf_out_hs);
     zf_out_srrc = filter(b_zf, a_zf, mf_out_srrc);
     
-    % 4. Plot Eye Diagrams
-    % Note: eyediagram() inherently spawns a NEW window for each call.
-    % You will get individual eye diagram windows popping up from this loop.
+    % 4. Plot Eye Diagrams (Unified Compact Figure)
+    figure(figQ11_Eyes);
     
-    % FIX: Changed sps to 2*sps (and period to 2) to view two full symbols to form a proper eye crossing.
-    eyediagram(zf_out_hs(offset_half_sine:end), 2*sps, 2, 0);
-    title(sprintf('Q11 ZF Output: Half-sine (%s, \\sigma^2 = %.3f)', noise_labels{i}, sig_pwr), 'FontSize', 12, 'FontWeight', 'bold');
-    ylabel('Amplitude'); xlabel('Time (s)');
-    % Filenames for ZF eyes
-    zf_hs_eye_file = sprintf('imgs/Q11/HS_%s.jpg', strrep(lower(noise_labels{i}), ' ', '_'));
-    exportgraphics(gcf, zf_hs_eye_file, 'Resolution', 300);
+    subplot(num_vars, 2, 2*i - 1);
+    slice_len = 20 * sps; 
+    start_hs = offset_half_sine + (sps/2); % Center the eye
+    eye_hs_zf = reshape(zf_out_hs(start_hs : start_hs + slice_len - 1), 2*sps, []);
+    plot(eye_hs_zf, 'b');
+    title(sprintf('ZF Eye: HS (%s)', noise_labels{i}));
+    grid on; ylabel('Amplitude');
+    ylim([-1.5 1.5]);
     
-    eyediagram(zf_out_srrc(offset_srrc:end), 2*sps, 2, 0);
-    title(sprintf('Q11 ZF Output: SRRC (%s, \\sigma^2 = %.3f)', noise_labels{i}, sig_pwr), 'FontSize', 12, 'FontWeight', 'bold');
-    ylabel('Amplitude'); xlabel('Time (s)');
-    zf_srrc_eye_file = sprintf('imgs/Q11/SRRC_%s.jpg', strrep(lower(noise_labels{i}), ' ', '_'));
-    exportgraphics(gcf, zf_srrc_eye_file, 'Resolution', 300);
+    subplot(num_vars, 2, 2*i);
+    start_srrc = offset_srrc + (sps/2); % Center the eye
+    eye_srrc_zf = reshape(zf_out_srrc(start_srrc : start_srrc + slice_len - 1), 2*sps, []);
+    plot(eye_srrc_zf, 'r');
+    title(sprintf('ZF Eye: SRRC (%s)', noise_labels{i}));
+    grid on;
+    ylim([-1.5 1.5]);
     
     % =====================================================================
     % 5. Plotting for the 10-bit stream
@@ -679,6 +684,13 @@ for i = 1:num_vars
     grid on; xlim([-1 11]); ylim([-1.5 1.5]);
 end
 exportgraphics(figure_zf_10bit, 'imgs/Q11/ZF_time_10bit.jpg', 'Resolution', 300);
+
+% Format and Export the unified Eye Diagram figure for Q11
+figure(figQ11_Eyes);
+subplot(num_vars, 2, num_vars*2 - 1); xlabel('Samples (2 Symbol Periods)');
+subplot(num_vars, 2, num_vars*2); xlabel('Samples (2 Symbol Periods)');
+exportgraphics(figQ11_Eyes, 'imgs/Q11/ZF_Eyes_Combined.jpg', 'Resolution', 300);
+
 %Q12 - MMSE Equalizer Implementation and Impulse/Frequency plots accross all 3 noise cases
 
 %------------------ QUESTION 12: MMSE Equalizer Frequency Response ------------------

@@ -173,7 +173,9 @@ The addition of Gaussian noise introduces random vertical displacement to the si
 
 ![](./imgs/Q8/matched.jpg)
 
-The impulse and frequency reeponses in Q1 represet the ideal pulse shapes and their spectrums. Q8 plots, however, correspond to the matched filter output. So the time domain signals are noisy and don't look anyything like the original pulses. The frequency response graphs are also noisy and have some fluctuations due to the random data and noise. However, the spectral shape is still a lowpass and the SRRC signal is still bandlimited than the half since.
+The impulse and frequency reeponses in Q1 represent the ideal pulse shapes and their spectrums. 
+
+The below Q8 plots correspond to the matched filter output. Comparing against the ideal signal plots from Q1, it's clear that the signals are noisy and barely resemble the original pulses. The frequency response graphs are also noisy and have some fluctuations due to the channel ISI and additive random noise. However, the spectral shape is still a lowpass and the SRRC signal is still bandlimited than the half since, so we maintain that the right data is being sent through, albeit with many pertubations. 
 
 #### Q9: Matched Filter Output - Eye Diagrams for 1 & 2 Bit Durations
 
@@ -183,40 +185,35 @@ The impulse and frequency reeponses in Q1 represet the ideal pulse shapes and th
 For the half sine, we want to sample at .5 seconds. (Max Eye Opening).
 For the SRRC we want to sample at 0.3 seconds. (Max Eye Opening)
 
-#### Q10 & 11: The Zero-Forcing (ZF) Equalizer
+TODO Q9
 
-Q10 answers: We will implement the zero-forcing filter by computing the frequency response of the channel and then create an inverse filter by taking the reciprocal of the channel response in the frequency domain. Then its converted back to the time domain to get the impulse response of the ZF equalizer. The signal is convolved with the equalizer which cancels out channel distortion and ISI.
 
-The frequency response of the zero forcing equalizer has large spikes at frequencies where the channel amplifies the signal. The impusle response is very long, and decays very slowly. The ZF equalizer is stable because H(f) is never 0, so 1/H(f) is finite at all frequencies. The channel inverse is not always guaranteed to be stable like if a frequency hits 0, then the zero forcing equalizer is infinite at that frequency and is no longer stable.
+#### Q10: The Zero-Forcing (ZF) Equalizer
+
+We will implement the zero-forcing filter by computing the frequency response of the channel and then create an inverse filter by taking the reciprocal of the channel response in the frequency domain. Then its converted back to the time domain to get the impulse response of the ZF equalizer. The signal is convolved with the equalizer which cancels out channel distortion and ISI.
 
 Here are both the impulse and frequency responses of the zero-forcing filter:
 
 ![](./imgs/Q10/Q10.jpg)
 
+The frequency response of the zero forcing equalizer has large spikes at frequencies where the channel amplifies the signal. The impulse response is very long and decays very slowly. The ZF equalizer is stable because H(f) is never 0, so 1/H(f) is finite at all frequencies. The channel inverse is not always guaranteed to be stable like if a frequency hits 0, then the zero forcing equalizer is infinite at that frequency and is no longer stable.
+
 #### Q11: Zero-Forcing (ZF) Equalizer Eye Diagrams
 
-Eye diagrams for:
+The following unified figure shows the eye diagrams for both Half-Sine (HS) and SRRC pulse shapes after Zero-Forcing equalization across different noise levels ($\sigma^2 = 0, 0.005, 0.02$):
 
-**No Noise ($\sigma^2 = 0$):**
-![](./imgs/Q11/HS_no_noise.jpg)
-![](./imgs/Q11/SRRC_no_noise.jpg)
+![](./imgs/Q11/ZF_Eyes_Combined.jpg)
 
-**Low Noise ($\sigma^2 = 0.005$):**
-![](./imgs/Q11/HS_little_noise.jpg)
-![](./imgs/Q11/SRRC_little_noise.jpg)
-
-**Heavy Noise ($\sigma^2 = 0.05$):**
-![](./imgs/Q11/HS_heavy_noise.jpg)
-![](./imgs/Q11/SRRC_heavy_noise.jpg)
+TODO Comment on these graphs and if they makes sense
 
 **Zero-Forcing Time Domain Output (10-bit stream):**
 
 ![](./imgs/Q11/ZF_time_10bit.jpg)
 
 
-#### Q12 & 13: The MMSE Equalizer 
+COMMENT ON THE RESULTING RANDOM BIT STREAM
 
-Q12:
+#### Q12 The MMSE Equalizer 
 
 ![](./imgs/Q12/MMSE_freq.jpg)
 
@@ -224,9 +221,13 @@ The Zero-Forcing (ZF) equalizer tries to perfectly invert the channel, but this 
 
 The MMSE equalizer is much cleaner because it balances fixing the channel with suppressing noise. Its impulse response shows only the essential spikes—one to capture the main signal and another to cancel the primary echo—without the extra "junk." This makes the MMSE eye diagrams stay significantly more open and stable as the noise increases compared to the ZF results.
 
-Q13:
+TODO FINISH UP COMMENTARY AND IMPLEMENTATION NOTES
+
+#### Q13: The MMSE Equalizer Eye Diagrams
 
 ![](./imgs/Q13/MMSE_eye.jpg)
+
+TODO Need much more commentary on the eye diagram.
 
 **MMSE Time Domain Output (10-bit stream):**
 
