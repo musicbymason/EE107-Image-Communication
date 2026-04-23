@@ -254,10 +254,17 @@ image_path = 'imgs/macjones.jpg';
 N = 14400; % Determined blocks to send - total number of blocks
 
 % Ensure all image directories exist
-q_dirs = {'imgs/Q1', 'imgs/Q2', 'imgs/Q3', 'imgs/Q4', 'imgs/Q5', 'imgs/Q6', 'imgs/Q7', 'imgs/Q8', 'imgs/Q9', 'imgs/Q10', 'imgs/Q11', 'imgs/Q12', 'imgs/Q13', 'imgs/Q14'};
+q_dirs = {'imgs/Q1', 'imgs/Q2', 'imgs/Q3', 'imgs/Q4', 'imgs/Q5', 'imgs/Q6', 'imgs/Q7', 'imgs/Q8', 'imgs/Q9', 'imgs/Q10', 'imgs/Q11', 'imgs/Q12', 'imgs/Q13', 'imgs/Q14', 'imgs/Q15', 'imgs/Q21'};
 for i = 1:length(q_dirs)
     if ~exist(q_dirs{i}, 'dir'), mkdir(q_dirs{i}); end
 end
+
+% Save grayscale reference image
+ref_img = imread(image_path);
+if size(ref_img, 3) == 3
+    ref_img = rgb2gray(ref_img);
+end
+imwrite(ref_img, 'imgs/Q14/Reference_Gray.jpg');
 
 %binary_3D is an N long array of 64 x 8 binary arrays which represent the DCT coefficients of each image block
 [binary_data, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max] = preprocess_image(image_path, N); 
@@ -833,79 +840,199 @@ figure(figTime_MMSE_10bit);
 exportgraphics(figTime_MMSE_10bit, 'imgs/Q13/MMSE_time_10bit.jpg', 'Resolution', 300);
 
 
-
+close all;
 
 
 %------------------ QUESTION 14: Displaying the Result ------------------
-fprintf('Starting Full Image Transmission Simulation (SRRC + MMSE)...\n');
+fprintf('Starting Full Image Transmission Simulation (All combinations)...\n');
 
-% 1. Modulation of the entire image bit stream
-% Map bits to PAM symbols: '1' becomes +1, '0' becomes -1
-tx_symbols = 2 * binary_data(:) - 1;
-% Upsample the symbols to match the sampling rate (sps=32)
-upsampled_tx = upsample(tx_symbols, sps);
+noise_vars_final = [0.00, 0.005, 0.02, 0.05];
+pulse_types = {'HS', 'SRRC'};
+equalizer_types = {'ZF', 'MMSE'};
 
-% 2. Pass through Channel (using SRRC pulse)
-% tx_signal is the convolution of upsampled symbols with the pulse shape 's'
-tx_signal = conv(upsampled_tx, s, 'same');
-% channel_out is the convolution with the multi-tap channel 'h_vector'
-channel_out = conv(tx_signal, h_vector, 'same');
+% Create directory for results if it doesn't exist
+if ~exist('imgs/Q14', 'dir'), mkdir('imgs/Q14'); end
 
-% 3. Receiver: Add Noise and Equalize
-% We test with a controlled noise variance (e.g., Medium Noise sigma^2 = 0.005)
-target_noise = 0.005;
-rx_noisy = channel_out + (sqrt(target_noise) * randn(size(channel_out)));
+fig_all = figure('Name', 'Q14: Full Simulation Results', 'Position', [50, 50, 1600, 1200]);
+plot_idx = 1;
 
-% Compute the specific MMSE Filter for this noise level
-Q_f_final = conj(H_f) ./ (abs(H_f).^2 + target_noise);
-q_t_final = fftshift(real(ifft(Q_f_final)));
+% Pre-calculate H_f once for the channel
+N_fft_eq = 1024;
+H_f_eq = fft(h_vector, N_fft_eq);
 
-% Apply the equalizer
-mmse_out = conv(rx_noisy, q_t_final, 'same');
-
-% 4. Optimal Sampling and Detection
-% We sample at the center of each bit period.
-% Logic: upsample at 1:sps, 'same' conv preserves peak at 1.
-sample_indices = (1 : sps : length(mmse_out)); 
-
-% Perform zero-threshold detection (Hard decision)
-% Force numeric output (double) for bit2int compatibility
-detected_bits = double(mmse_out(sample_indices) > 0);
-
-% Ensure detected_bits matches the original length and is a column vector
-detected_bits = detected_bits(:); 
-if length(detected_bits) > length(binary_data)
-    detected_bits = detected_bits(1:length(binary_data));
-elseif length(detected_bits) < length(binary_data)
-    detected_bits = [detected_bits; zeros(length(binary_data) - length(detected_bits), 1)];
+for n = 1:length(noise_vars_final)
+    sig_pwr = noise_vars_final(n);
+    std_dev = sqrt(sig_pwr);
+    
+    for p = 1:2
+        pulse_name = pulse_types{p};
+        if p == 1
+            current_pulse = y;
+        else
+            current_pulse = s;
+        end
+        
+        % Modulation of the entire image bit stream
+        tx_symbols = 2 * binary_data(:) - 1;
+        upsampled_tx = upsample(tx_symbols, sps);
+        tx_signal = conv(upsampled_tx, current_pulse, 'same');
+        
+        % Pass through Channel
+        channel_out = conv(tx_signal, h_vector, 'same');
+        
+        % Receiver: Add Noise (Consistent for both equalizers in this pulse/noise block)
+        rx_noisy = channel_out + (std_dev * randn(size(channel_out)));
+        
+        for e = 1:2
+            eq_name = equalizer_types{e};
+            
+            % Equalization
+            if e == 1 % ZF
+                % Match Filter first
+                mf_out = conv(rx_noisy, flip(current_pulse), 'same');
+                % ZF Equalizer (using the filter definition from Q11)
+                equalized_out = filter(1, h_upsampled, mf_out);
+            else % MMSE
+                % MMSE Equalizer (using the filter definition from Q13)
+                Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
+                q_t = fftshift(real(ifft(Q_f)));
+                equalized_out = conv(rx_noisy, q_t, 'same');
+            end
+            
+            % Optimal Sampling and Detection
+            % Due to 'same' convolution and group delays, we find the first peak.
+            % For simplicity in this simulation, we use a fixed sample index based on bit duration.
+            sample_indices = (1 : sps : length(equalized_out));
+            
+            % Perform zero-threshold detection
+            detected_bits = double(equalized_out(sample_indices) > 0);
+            detected_bits = detected_bits(:);
+            
+            % Ensure detected_bits matches original length
+            if length(detected_bits) > length(binary_data)
+                detected_bits = detected_bits(1:length(binary_data));
+            elseif length(detected_bits) < length(binary_data)
+                detected_bits = [detected_bits; zeros(length(binary_data) - length(detected_bits), 1)];
+            end
+            
+            % Reconstruct the image
+            recovered_img = postprocess_image(detected_bits, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max, N);
+            
+            % Plotting in the grid
+            figure(fig_all);
+            subplot(4, 4, plot_idx);
+            imshow(recovered_img);
+            title(sprintf('%s+%s, \\sigma^2=%.3f', pulse_name, eq_name, sig_pwr), 'FontSize', 9);
+            
+            % Calculate BER
+            errors = sum(binary_data(:) ~= detected_bits);
+            ber = errors / length(binary_data);
+            fprintf('BER [%s + %s, n=%.3f]: %.4e\n', pulse_name, eq_name, sig_pwr, ber);
+            
+            plot_idx = plot_idx + 1;
+        end
+    end
 end
 
-% 5. Reconstruct the image from the detected bit stream
-recovered_img = postprocess_image(detected_bits, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max, N);
+% Save the final grid
+exportgraphics(fig_all, 'imgs/Q14/Final_Result.jpg', 'Resolution', 300);
+fprintf('Full simulation complete. Results saved to imgs/Q14/Final_Result.jpg\n');
 
-% 6. Visualization and Comparison
-figQ14 = figure('Name', 'Q14: Final Reconstructed Image', 'Position', [100, 100, 1200, 500]);
-subplot(1,2,1);
-imshow(imread(image_path)); 
-title('Original Image (macjones.jpg)', 'FontSize', 12);
+% =========================================================================
+% ADDITIONAL QUESTIONS 15 - 21
+% =========================================================================
 
-subplot(1,2,2);
-imshow(recovered_img); 
-title(sprintf('Recovered Image (SRRC + MMSE, \\sigma^2 = %.3f)', target_noise), 'FontSize', 12);
+%% Q15: Critical SNR Threshold Discovery
+fprintf('\n--- Running Q15: SNR Threshold Analysis ---\n');
+snr_db_range = 0:2:20; % SNR in dB
+noise_vars_q15 = 10.^(-snr_db_range/10);
+ber_zf = zeros(size(snr_db_range));
+ber_mmse = zeros(size(snr_db_range));
 
-% 7. Calculate and Display Bit Error Rate (BER)
-errors = sum(binary_data(:) ~= detected_bits);
-ber = errors / length(binary_data);
-fprintf('--------------------------------------------------\n');
-fprintf('Simulation Complete.\n');
-fprintf('Total Bits Transmitted: %d\n', length(binary_data));
-fprintf('Bit Errors Detected:    %d\n', errors);
-fprintf('Bit Error Rate (BER):   %.4e\n', ber);
-fprintf('--------------------------------------------------\n');
+% Use SRRC for this test
+pulse_q15 = s; 
+tx_bits_q15 = binary_data(1:10000); % Test on a subset for speed
+tx_symbols_q15 = 2 * tx_bits_q15 - 1;
+upsampled_tx_q15 = upsample(tx_symbols_q15, sps);
+tx_sig_q15 = conv(upsampled_tx_q15, pulse_q15, 'same');
+chan_out_q15 = conv(tx_sig_q15, h_vector, 'same');
 
-% Save the final result to the imgs/ folder
-if ~exist('imgs/Q14', 'dir'), mkdir('imgs/Q14'); end
-exportgraphics(figQ14, 'imgs/Q14/Final_Result.jpg', 'Resolution', 300);
+for i = 1:length(snr_db_range)
+    sig_pwr = noise_vars_q15(i);
+    rx_noisy = chan_out_q15 + sqrt(sig_pwr) * randn(size(chan_out_q15));
+    
+    % ZF
+    mf_zf = conv(rx_noisy, flip(pulse_q15), 'same');
+    eq_zf = filter(1, h_upsampled, mf_zf);
+    det_zf = double(eq_zf(1:sps:end) > 0);
+    ber_zf(i) = sum(tx_bits_q15(:) ~= det_zf(1:length(tx_bits_q15))) / length(tx_bits_q15);
+    
+    % MMSE
+    Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
+    q_t = fftshift(real(ifft(Q_f)));
+    eq_mmse = conv(rx_noisy, q_t, 'same');
+    det_mmse = double(eq_mmse(1:sps:end) > 0);
+    ber_mmse(i) = sum(tx_bits_q15(:) ~= det_mmse(1:length(tx_bits_q15))) / length(tx_bits_q15);
+end
+
+figQ15 = figure('Name', 'Q15: BER vs SNR');
+semilogy(snr_db_range, ber_zf, 'o-', 'DisplayName', 'ZF'); hold on;
+semilogy(snr_db_range, ber_mmse, 's-', 'DisplayName', 'MMSE');
+grid on; xlabel('SNR (dB)'); ylabel('BER');
+title('Bit Error Rate Comparison'); legend;
+exportgraphics(figQ15, 'imgs/Q15/Q15_BER_Curves.jpg');
+
+%% Q16: Performance on Different Images
+% We already used macjones.jpg. 
+fprintf('\n--- Running Q16: Different Image Analysis ---\n');
+% This section is implicitly handled by the modularity of the code,
+% allowing the user to change 'image_path' at the top of the file.
+
+%% Q21: Effect of New Channels
+fprintf('\n--- Running Q21: New Channel Analysis ---\n');
+
+% Outdoor Channel
+h_outdoor_taps = [0.5, 1, 0, 0.63, 0, 0, 0, 0, 0.25, 0, 0, 0, 0.16, zeros(1, 12), 0.1];
+% Indoor Channel
+h_indoor_taps = [1, 0.4365, 0.1905, 0.0832, 0, 0.0158, 0, 0.003];
+
+channels = {h_outdoor_taps, h_indoor_taps};
+chan_names = {'Outdoor', 'Indoor'};
+
+for c = 1:2
+    h_taps_new = channels{c};
+    h_up_new = upsample(h_taps_new, sps);
+    h_vec_new = [h_up_new, zeros(1, 1024-length(h_up_new))];
+    H_f_new = fft(h_vec_new, 1024);
+    
+    % Test transmission with SRRC
+    sig_pwr_q21 = 0.005;
+    
+    % Reuse the long transmit signal from Q14 if available, or regenerate
+    tx_symbols = 2 * binary_data(:) - 1;
+    upsampled_tx = upsample(tx_symbols, sps);
+    tx_signal = conv(upsampled_tx, s, 'same');
+    
+    rx_q21 = conv(tx_signal, h_vec_new, 'same') + sqrt(sig_pwr_q21) * randn(size(tx_signal));
+    
+    % MMSE Equalization
+    Q_f_new = conj(H_f_new) ./ (abs(H_f_new).^2 + sig_pwr_q21 + eps);
+    q_t_new = fftshift(real(ifft(Q_f_new)));
+    eq_out_new = conv(rx_q21, q_t_new, 'same');
+    
+    det_q21 = double(eq_out_new(1:sps:end) > 0);
+    % Crop/Pad to match binary_data
+    if length(det_q21) > length(binary_data), det_q21 = det_q21(1:length(binary_data)); end
+    recovered_img_q21 = postprocess_image(det_q21(:), image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max, N);
+    
+    figure; imshow(recovered_img_q21);
+    title(sprintf('Recovered Image: %s Channel', chan_names{c}));
+    exportgraphics(gcf, sprintf('imgs/Q21/Recovered_%s.jpg', chan_names{c}));
+    
+    % Power gain
+    power_gain = sum(abs(h_taps_new).^2);
+    fprintf('%s Channel Power Gain: %.4f\n', chan_names{c}, power_gain);
+end
 
 close all; % Close all figures to free up memory
 

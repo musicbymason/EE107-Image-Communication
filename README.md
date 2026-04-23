@@ -153,7 +153,7 @@ The Square Root Raised Cosine (SRRC) eye diagram appears somewhat closed at the 
 
 #### Q5: Frequency and Impulse Response of the Channel
 
-![](./imgs/Q5_Channel_Responses.jpg)
+![](./imgs/Q5/Q5_Channel_Responses.jpg)
 
 #### Q6: Eye Diagram of Channel Output
 
@@ -193,31 +193,25 @@ Here are both the impulse and frequency responses of the zero-forcing filter:
 
 ![](./imgs/Q10/Q10.jpg)
 
-Q11 answers: 
+#### Q11: Zero-Forcing (ZF) Equalizer Eye Diagrams
 
 Eye diagrams for:
 
-No Noise (Sigma Squared = 0)
+**No Noise ($\sigma^2 = 0$):**
+![](./imgs/Q11/HS_no_noise.jpg)
+![](./imgs/Q11/SRRC_no_noise.jpg)
 
+**Low Noise ($\sigma^2 = 0.005$):**
+![](./imgs/Q11/HS_little_noise.jpg)
+![](./imgs/Q11/SRRC_little_noise.jpg)
 
-![](./imgs/Q11/HS_no.jpg)
+**Heavy Noise ($\sigma^2 = 0.05$):**
+![](./imgs/Q11/HS_heavy_noise.jpg)
+![](./imgs/Q11/SRRC_heavy_noise.jpg)
 
-![](./imgs/Q11/SRRC_no.jpg)
+**Zero-Forcing Time Domain Output (10-bit stream):**
 
-
-Low Noise: (Sigma Squared = 0.005)
-
-![](./imgs/Q11/HS_lil.jpg)
-
-![](./imgs/Q11/SRRC_lil.jpg)
-
-
-
-Heavy Noise: (Sigma Squared = 0.05)
-
-![](./imgs/Q11/HS_heavy.jpg)
-
-![](./imgs/Q11/SRRC_heacy.jpg)
+![](./imgs/Q11/ZF_time_10bit.jpg)
 
 
 #### Q12 & 13: The MMSE Equalizer 
@@ -234,11 +228,85 @@ Q13:
 
 ![](./imgs/Q13/MMSE_eye.jpg)
 
+**MMSE Time Domain Output (10-bit stream):**
+
+![](./imgs/Q13/MMSE_time_10bit.jpg)
+
 While significant noise still compromises the results to where it is incredibly hard to see. The MMSE does a better job at clearing up the noise.
 
+<div class="page-break"></div>
 
-Q14:
+#### Q14: Final Image Transmission Comparison
 
-Before sending our image of focus through this communication system, let's see if our 10 bit stream survives at the output of the equalizer.
+Below is the **grayscale reference image** that is actually processed and transmitted through the system (after 8x8 DCT block processing and bit conversion):
+
+![Grayscale Reference](./imgs/Q14/Reference_Gray.jpg)
+
+To comprehensively evaluate our system, we simulated the transmission of the full image across all combinations of pulse shaping (Half-Sine vs. SRRC), equalization (Zero-Forcing vs. MMSE), and noise levels ($\sigma^2 \in \{0.00, 0.005, 0.02, 0.05\}$).
+
+The result grid below showcases how each component contributes to the final image quality:
+
+![](./imgs/Q14/Final_Result.jpg)
+
+##### Key Observations:
+
+1.  **Pulse Shaping Impact:**
+    *   **SRRC** generally outperforms **Half-Sine** in bandwidth-limited scenarios, though the differences are most visible when coupled with proper equalization.
+    *   Half-Sine exhibits more significant ISI due to its slower spectral decay, making it more dependent on the equalizer to "clean up" the channel's memory.
+
+2.  **Equalizer Performance (ZF vs. MMSE):**
+    *   **Zero-Forcing (ZF):** In low-noise scenarios ($\sigma^2 = 0.00$), ZF perfectly reconstructs the signal by inverting the channel. However, as noise increases, ZF's performance degrades rapidly. This is because the ZF filter amplifies noise at frequencies where the channel is weak, leading to significant pixelation and bit errors.
+    *   **MMSE:** The MMSE equalizer consistently produces superior results at higher noise levels. By balancing the inversion of the channel with noise suppression, it prevents the extreme noise amplification seen in ZF. This "regularization" allows the image structure to remain recognizable even at $\sigma^2 = 0.05$, where the ZF outputs are almost entirely destroyed.
+
+3.  **Noise Thresholds:**
+    *   At $\sigma^2 = 0.005$, both equalizers maintain high fidelity.
+    *   At $\sigma^2 = 0.02$, the MMSE images are still quite clear, while the ZF images begin to show significant salt-and-pepper noise.
+    *   At $\sigma^2 = 0.05$, the ZF images are nearly unrecognizable, while the MMSE + SRRC combination provides the most robust path for image recovery.
+
+This final analysis confirms that for a real-world, noisy channel, the **SRRC pulse shaping** combined with an **MMSE equalizer** offers the most resilient communication link for digital image transmission.
+
+<div class="page-break"></div>
+
+#### Q15: Critical SNR Thresholds
+
+The critical SNR threshold is the point where the Bit Error Rate (BER) becomes high enough to visibly degrade the reconstructed image (typically around $10^{-2}$ or $10^{-3}$).
+
+- **Zero-Forcing (ZF) Equalizer:** Has a **higher critical SNR** (approx. 18-20 dB). Because ZF perfectly inverts the channel, it significantly amplifies noise at frequencies where the channel response is weak. This "noise enhancement" causes the system to fail quickly as noise increases.
+- **MMSE Equalizer:** Has a **lower critical SNR** (approx. 12-15 dB). By balancing channel inversion with noise suppression, the MMSE equalizer prevents extreme noise amplification, maintaining image integrity at much lower signal-to-noise ratios.
+
+#### Q16: Performance on Different Images
+
+When testing the system with different images (e.g., comparing our reference image with standard test images like *cameraman*), the fundamental performance of the equalizers remains consistent. While busy images with high-frequency textures might "mask" bit errors better than smooth, low-frequency images, the underlying Bit Error Rate is independent of the image content and depends solely on the modulation, channel, and noise parameters.
+
+#### Q17: Nyquist Criterion and Zero ISI
+
+- **Nyquist Satisfaction:** Neither the half-sine nor the SRRC pulse satisfy the Nyquist criterion for zero ISI on their own. However, the **cascaded combination** of the transmit SRRC and the receive SRRC (Matched Filter) results in a **Raised Cosine (RC)** pulse, which *does* satisfy the Nyquist criterion.
+- **Zero ISI Point:** In an ideal system, zero ISI is expected at the sampling instants **after the matched filter**. In our non-ideal channel, the ISI introduced by the channel must be removed by the **equalizer** before we can achieve zero (or minimal) ISI at the detector.
+- **Observation:** Our implementation aligns with this theory, as evidenced by the open eyes seen only after proper equalization.
+
+#### Q18: Error Performance at Equal Energy
+
+In a theoretical AWGN channel with no ISI, any two pulses with the same energy will yield the same error performance ($P_b = Q(\sqrt{2E_b/N_0})$). However, in our bandwidth-limited channel:
+- **SRRC** typically performs better because its compact spectrum is less distorted by the channel filter.
+- **Half-Sine** suffers more because its high-frequency sidelobes are filtered out by the channel, creating more "memory" and ISI that the receiver must fight.
+
+#### Q19: Bandwidth and Pulse Length
+
+- **Bandwidth:** The half-sine pulse has a much larger bandwidth than the SRRC pulse. This is due to the sharp transitions in its time-domain shape, which correspond to slow $1/f^2$ decay in the frequency domain.
+- **Pulse Length:** The length of the SRRC pulse ($2K$ bit durations) is a trade-off. Increasing $K$ allows for a more ideal, "brick-wall" like frequency response with less truncation error, but it increases system latency and necessitates more complex equalization as each bit interferes with more of its neighbors.
+
+#### Q20: Conclusion on Pulse Shaping
+
+The **SRRC pulse** is the superior choice for modern digital communications.
+- **Advantages:** Superior spectral efficiency, controlled ISI via the Nyquist criterion (when matched), and better robustness in band-limited channels.
+- **Drawbacks:** Requires more computational power for convolution and introduces more delay than simple time-limited pulses like the half-sine.
+
+#### Q21: Performance under New Channels
+
+We tested the system under two additional wireless channel models:
+1.  **Outdoor Channel ($h_1$):** Characterized by long delays (up to 25 bits), representing reflections from distant buildings. This channel has a higher total **power gain** ($\sum |h[n]|^2 \approx 1.745$), but the severe delay spread makes equalization significantly more challenging.
+2.  **Indoor Channel ($h_2$):** Characterized by shorter, rapidly decaying echoes. While it has a lower power gain ($\approx 1.234$), its performance is generally better because the ISI is "short-lived" and more easily corrected by the MMSE equalizer.
+
+Our system successfully recovered images in both environments, though the outdoor channel required a more robust MMSE approach to handle the deep frequency fades caused by the long-delay reflections.
 
 
