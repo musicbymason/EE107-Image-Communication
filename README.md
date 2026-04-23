@@ -192,8 +192,6 @@ The below Q8 plots correspond to the matched filter output. Comparing against th
 For the half sine, we want to sample at 0.5 seconds. (Max Eye Opening).
 For the SRRC we want to sample at 0.3 seconds. (Max Eye Opening)
 
-TODO Q9
-
 #### Q10: The Zero-Forcing (ZF) Equalizer
 
 We will implement the zero-forcing filter by computing the frequency response of the channel and then create an inverse filter by taking the reciprocal of the channel response in the frequency domain. Then it will be converted back to the time domain to get the impulse response of the ZF equalizer. The signal is convolved with the equalizer which will ideally cancel out channel distortion.
