@@ -1,4 +1,3 @@
-
 %Image Pre-Processing
 function [binary_data, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max] = preprocess_image(image_path, N)
    %image into readable data format - rn is 1280 x 720  to 8 * 8 1280 * (720 / 64)
@@ -45,23 +44,20 @@ function [binary_data, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, D
    binary_3D = permute(reshaped_array, [2, 1, 3]);
 end
 
-%Image Reconstruction
+%Post processing Image Reconstruction
 function [reconstructed_image] = postprocess_image(received_bits, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max, N)
-    % 1. Convert bits back to 8-bit integers
-    % Note: Use bi2de for MSB-first conversion (default is LSB)
-    % Our binary_data from preprocess was generated with int2bit(DCT_vector, 8)
-    % and then reshaped. detected_bits is a column vector.
+    %  Convert bits back to 8-bit integers
     
     received_integers = bit2int(received_bits, 8);
     
-    % 2. Reshape back to the 3D block array [64 x 1 x N]
+    % Reshape back to the 3D block array [64 x 1 x N]
     DCT_3d_column = reshape(received_integers, [64, 1, N]);
     
-    % 3. Scale back to 0-1 and then to DCT range
+    % Scale back to 0-1 and then to DCT range
     DCT_normalized = double(DCT_3d_column) / 255;
     DCT_3D_array = reshape(DCT_normalized * (DCT_Image_max - DCT_Image_min) + DCT_Image_min, [8, 8, N]);
     
-    % 4. Re-order blocks into the full image matrix
+    % Re-order blocks into the full image matrix
     m = scaled_DCT_dimensions(1);
     n = scaled_DCT_dimensions(2);
     
@@ -78,7 +74,7 @@ function [reconstructed_image] = postprocess_image(received_bits, image_dimensio
     DCT_Image_4D = permute(DCT_Image_Ordered, [1, 3, 2, 4]);
     Scaled_DCT_Image = reshape(DCT_Image_4D, [m, n]);
     
-    % 5. Invert DCT in 8x8 blocks
+    % Invert DCT in 8x8 blocks
     reconstructed_image = blockproc(Scaled_DCT_Image, [8 8], @(block_struct) idct2(block_struct.data));
 end
 
@@ -150,28 +146,28 @@ function [s] = srrc_pulse(alpha, k, sps)
    %SRRC in frequency domain
    Nfft = 4096;                                % large FFT for smooth curve
 
-S = fft(s, Nfft);                            % compute FFT
-S = S(1:Nfft/2 + 1);                         % one-sided spectrum
+    S = fft(s, Nfft);                            % compute FFT
+    S = S(1:Nfft/2 + 1);                         % one-sided spectrum
 
-mag_dB = 20*log10(abs(S) / max(abs(S)) + eps);  % normalize to 0 dB
-phase = unwrap(angle(S));                    % unrestrict period
+    mag_dB = 20*log10(abs(S) / max(abs(S)) + eps);  % normalize to 0 dB
+    phase = unwrap(angle(S));                    % unrestrict period
 
-f = linspace(0, 1, Nfft/2 + 1);              % normalized frequency (0 → π)
+    f = linspace(0, 1, Nfft/2 + 1);              % normalized frequency (0 → π)
 
-figure;
-subplot(2,1,1)
-plot(f, mag_dB, 'LineWidth', 1.2)
-title(sprintf('SRRC Magnitude Spectrum (dB) (α = %.1f)', alpha))
-xlabel('Normalized Frequency (×π rad/sample)')
-ylabel('Magnitude (dB)')
-grid on
+    figure;
+    subplot(2,1,1)
+    plot(f, mag_dB, 'LineWidth', 1.2)
+    title(sprintf('SRRC Magnitude Spectrum (dB) (α = %.1f)', alpha))
+    xlabel('Normalized Frequency (×π rad/sample)')
+    ylabel('Magnitude (dB)')
+    grid on
 
-subplot(2,1,2)
-plot(f, phase, 'LineWidth', 1.2)
-title('SRRC Phase Spectrum')
-xlabel('Normalized Frequency (×π rad/sample)')
-ylabel('Phase (rad)')
-grid on
+    subplot(2,1,2)
+    plot(f, phase, 'LineWidth', 1.2)
+    title('SRRC Phase Spectrum')
+    xlabel('Normalized Frequency (×π rad/sample)')
+    ylabel('Phase (rad)')
+    grid on
 
 end
 
@@ -272,7 +268,7 @@ end
 sps = 32; % 32 Samples for both the half sine and SRRC 
 T = 1;    % Duration in seconds
 %y is our time domain half-sine pulse with 32 samples for 0 <= t < 1
-y =half_sine_pulse(sps, T); %designs and then plots the half sine pulse in time and frequency domain
+y = half_sine_pulse(sps, T); %designs and then plots the half sine pulse in time and frequency domain
 exportgraphics(figure(1), 'imgs/Q1/Q1_thalfsine.jpg', 'Resolution', 300);
 exportgraphics(figure(2), 'imgs/Q1/Q1_fhalfsine.jpg', 'Resolution', 300);
 
