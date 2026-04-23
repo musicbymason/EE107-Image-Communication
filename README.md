@@ -45,6 +45,9 @@
   }
 </style>
 
+
+
+
 # EE107 Mid-Report
 
 ## Authors: Jacob Gerson, Asher Milberg, Mason Doshi
@@ -190,13 +193,16 @@ TODO Q9
 
 #### Q10: The Zero-Forcing (ZF) Equalizer
 
-We will implement the zero-forcing filter by computing the frequency response of the channel and then create an inverse filter by taking the reciprocal of the channel response in the frequency domain. Then its converted back to the time domain to get the impulse response of the ZF equalizer. The signal is convolved with the equalizer which cancels out channel distortion and ISI.
+We will implement the zero-forcing filter by computing the frequency response of the channel and then create an inverse filter by taking the reciprocal of the channel response in the frequency domain. Then it will be converted back to the time domain to get the impulse response of the ZF equalizer. The signal is convolved with the equalizer which will ideally cancel out channel distortion.
 
 Here are both the impulse and frequency responses of the zero-forcing filter:
 
 ![](./imgs/Q10/Q10.jpg)
 
-The frequency response of the zero forcing equalizer has large spikes at frequencies where the channel amplifies the signal. The impulse response is very long and decays very slowly. The ZF equalizer is stable because H(f) is never 0, so 1/H(f) is finite at all frequencies. The channel inverse is not always guaranteed to be stable like if a frequency hits 0, then the zero forcing equalizer is infinite at that frequency and is no longer stable.
+
+The frequency response of the zero forcing equalizer has large spikes at frequencies where the channel amplifies the signal. The impulse response is very long and decays very slowly. The ZF equalizer is stable because H(f) is never 0, so 1/H(f) is finite at all frequencies. 
+
+The channel's inverse is not always guaranteed to be stable - at certain discrete samples the channel response is 0 and results in an infinite response from the Zero-Forcing channel. 
 
 #### Q11: Zero-Forcing (ZF) Equalizer Eye Diagrams
 
@@ -204,16 +210,17 @@ The following unified figure shows the eye diagrams for both Half-Sine (HS) and 
 
 ![](./imgs/Q11/ZF_Eyes_Combined.jpg)
 
-TODO Comment on these graphs and if they makes sense
+These graphs show exactly what is expected of the zero forcing (ZF) equalizer. With little noise we can see the effects clearly for both pulse shapes, where the magnitudes stay between -1 and 1. However, once noise is added the magnitudes shoot way beyond these values as the equalizer cannot account for these variables.
 
 **Zero-Forcing Time Domain Output (10-bit stream):**
 
 ![](./imgs/Q11/ZF_time_10bit.jpg)
 
-
-COMMENT ON THE RESULTING RANDOM BIT STREAM
+These results are an updated graph to show the progess of our information along this communication system's path. 
 
 #### Q12 The MMSE Equalizer 
+
+To compute the MMSE filter, we did most of the math in the frequency domain. By utilizing the FFT and the frequency math to get the equation for the MMSE. Then, by taking the ifft of this frequency response to get the impulse response of the filter. Finally by convolving this with the output of the channel to get the final output of the filter.
 
 ![](./imgs/Q12/MMSE_freq.jpg)
 
@@ -221,13 +228,11 @@ The Zero-Forcing (ZF) equalizer tries to perfectly invert the channel, but this 
 
 The MMSE equalizer is much cleaner because it balances fixing the channel with suppressing noise. Its impulse response shows only the essential spikes—one to capture the main signal and another to cancel the primary echo—without the extra "junk." This makes the MMSE eye diagrams stay significantly more open and stable as the noise increases compared to the ZF results.
 
-TODO FINISH UP COMMENTARY AND IMPLEMENTATION NOTES
-
 #### Q13: The MMSE Equalizer Eye Diagrams
 
 ![](./imgs/Q13/MMSE_eye.jpg)
 
-TODO Need much more commentary on the eye diagram.
+These graphs give an expected output for the filter. The outputs are normalized and with an increase in noise, the output of the filter does perform better in producing a reconizable eye diagram as compared to the zero forcing equalizer. However, there is still significant noise.
 
 **MMSE Time Domain Output (10-bit stream):**
 
@@ -250,6 +255,8 @@ The result grid below showcases how each component contributes to the final imag
 ![](./imgs/Q14/Final_Result.jpg)
 
 ##### Key Observations:
+
+Overall, the differences between the two filters are not as great as we were initially expecting, but the SRRC seems marginally better. 
 
 1.  **Pulse Shaping Impact:**
     *   **SRRC** generally outperforms **Half-Sine** in bandwidth-limited scenarios, though the differences are most visible when coupled with proper equalization.

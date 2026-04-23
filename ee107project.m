@@ -499,7 +499,45 @@ subplot(3,2,6); xlabel('Frequency (normalized)');
 exportgraphics(figQ8, 'imgs/Q8/matched.jpg', 'Resolution', 300);
 
 %------------------ QUESTION 9: Matched Filter Eye Diagrams ------------------
-figQ9 = figure('Name', 'Q9: Matched Filter Eye Diagrams', 'Position', [100, 100, 1000, 1200]);
+figQ9_1B = figure('Name', 'Q9: Matched Filter Eye Diagrams - 1-Bit', 'Position', [100, 100, 1000, 1200]);
+half_symbol = sps / 2;
+
+for i = 1:length(noise_variances)
+    sig_pwr = noise_variances(i);
+    std_dev = sqrt(sig_pwr);
+    
+    % 1. Re-generate filtered signals
+    rx_hs = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
+    rx_srrc = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
+    
+    mf_hs = conv(rx_hs, flip(y), 'same');
+    mf_srrc = conv(rx_srrc, flip(s), 'same');
+    
+    % 2. Plot Matched Filter Eye - Half-Sine (Left Column)
+    subplot(3, 2, 2*i - 1);
+    start_hs = offset_half_sine + half_symbol;
+    % Reshape into segments ofq*sps to show q-bit duration
+    eye_hs = reshape(mf_hs(start_hs : start_hs + (sps*40)-1), sps, []);
+    plot(eye_hs, 'b');
+    title(sprintf('MF Eye: Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
+    grid on; ylabel('Amplitude');
+    
+    % 3. Plot Matched Filter Eye - SRRC (Right Column)
+    subplot(3, 2, 2*i);
+    start_srrc = offset_srrc + half_symbol;
+    eye_srrc = reshape(mf_srrc(start_srrc : start_srrc + (sps*40)-1), sps, []);
+    plot(eye_srrc, 'r');
+    title(sprintf('MF Eye: SRRC (\\sigma^2 = %.3f)', sig_pwr));
+    grid on;
+end
+
+% Labels for bottom row
+subplot(3,2,5); xlabel('Samples (1-Bit Duration)');
+subplot(3,2,6); xlabel('Samples (1-Bit Duration)');
+
+exportgraphics(figQ9_1B, 'imgs/Q9/Matched_Filter_Eyes_1bit.jpg', 'Resolution', 300);
+
+figQ9_2B = figure('Name', 'Q9: Matched Filter Eye Diagrams - 2-Bit', 'Position', [100, 100, 1000, 1200]);
 half_symbol = sps / 2;
 
 for i = 1:length(noise_variances)
@@ -535,7 +573,7 @@ end
 subplot(3,2,5); xlabel('Samples (2-Bit Duration)');
 subplot(3,2,6); xlabel('Samples (2-Bit Duration)');
 
-exportgraphics(figQ9, 'imgs/Q9/Matched_Filter_Eyes.jpg', 'Resolution', 300);
+exportgraphics(figQ9_2B, 'imgs/Q9/Matched_Filter_Eyes.jpg', 'Resolution', 300);
 
 %-10 & 11: Zero-Forcing Equalizer 
 
@@ -834,7 +872,6 @@ noise_vars_final = [0.00, 0.005, 0.02, 0.05];
 pulse_types = {'HS', 'SRRC'};
 equalizer_types = {'ZF', 'MMSE'};
 
-% Create directory for results if it doesn't exist
 if ~exist('imgs/Q14', 'dir'), mkdir('imgs/Q14'); end
 
 fig_all = figure('Name', 'Q14: Full Simulation Results', 'Position', [50, 50, 1600, 1200]);
@@ -857,6 +894,10 @@ for n = 1:length(noise_vars_final)
         end
         
         % Modulation of the entire image bit stream
+
+        %
+
+        %Sampling Starts here for the full image data
         tx_symbols = 2 * binary_data(:) - 1;
         upsampled_tx = upsample(tx_symbols, sps);
         tx_signal = conv(upsampled_tx, current_pulse, 'same');
