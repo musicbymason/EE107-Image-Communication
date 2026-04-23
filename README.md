@@ -182,14 +182,17 @@ The below Q8 plots correspond to the matched filter output. Comparing against th
 
 #### Q9: Matched Filter Output - Eye Diagrams for 1 & 2 Bit Durations
 
+**Matched Filter Eye Diagram - 1 Bit Duration**
+![](./imgs/Q9/Matched_Filter_Eyes_1bit.jpg)
 
+**Matched Filter Eye Diagram - 2 Bit Duration**
 ![](./imgs/Q9/Matched_Filter_Eyes.jpg)
 
-For the half sine, we want to sample at .5 seconds. (Max Eye Opening).
+
+For the half sine, we want to sample at 0.5 seconds. (Max Eye Opening).
 For the SRRC we want to sample at 0.3 seconds. (Max Eye Opening)
 
 TODO Q9
-
 
 #### Q10: The Zero-Forcing (ZF) Equalizer
 
@@ -256,7 +259,7 @@ The result grid below showcases how each component contributes to the final imag
 
 ##### Key Observations:
 
-Overall, the differences between the two filters are not as great as we were initially expecting, but the SRRC seems marginally better. 
+Overall, the differences between the two filters are not as great as we were initially expecting, but the SRRC seems marginally better, especially when the noise levels are much lower. However, at higher noise levels, the half-sine filter seems to do better. This seems odd since in class, we learned in class that SRRC is better by a lot, so these results seem very surprising. 
 
 1.  **Pulse Shaping Impact:**
     *   **SRRC** generally outperforms **Half-Sine** in bandwidth-limited scenarios, though the differences are most visible when coupled with proper equalization.
