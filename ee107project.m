@@ -894,10 +894,10 @@ for n = 1:length(noise_vars_final)
         pulse_name = pulse_types{p};
         if p == 1
             current_pulse = y;
-            offset = 17; % Peak of Half-Sine = (sps/2 + 1)
+            offset = 16; % Peak of Half-Sine = (sps/2 + 1)
         else
             current_pulse = s;
-            offset = 193; % Peak of SRRC = k*sps + 1
+            offset = 192; % Peak of SRRC = k*sps + 1
         end
         
         % Modulation of the entire image bit stream
@@ -935,21 +935,19 @@ for n = 1:length(noise_vars_final)
                 equalized_out = conv(mf_out, q_t, 'same');
             end
 
-            test_impulse = zeros(sps * 10, 1); test_impulse(1) = 1;
-            test_tx = filter(current_pulse, 1, test_impulse);
-            test_chan = filter(h_upsampled, 1, test_tx);
-            if e == 1 % ZF
-                test_eq = filter(1, h_upsampled, filter(flip(current_pulse), 1, test_chan));
-            else % MMSE
-                test_eq = conv(test_chan, q_t, 'same');
-            end
-            [~, best_offset] = max(abs(test_eq));
+            % // test_impulse = zeros(sps * 10, 1); test_impulse(1) = 1;
+            % // test_tx = filter(current_pulse, 1, test_impulse);
+            % // test_chan = filter(h_upsampled, 1, test_tx);
+            % // if e == 1 % ZF
+            % //     test_eq = filter(1, h_upsampled, filter(flip(current_pulse), 1, test_chan));
+            % // else % MMSE
+            % //     test_eq = conv(test_chan, q_t, 'same');
+            % // end
+            % // [~, best_offset] = max(abs(test_eq));
             
-            sample_indices = (best_offset : sps : length(equalized_out));
-            fprintf('Best sampling offset for %s + %s, \\sigma^2=%.3f: %d\n', pulse_name, eq_name, sig_pwr, best_offset);
+            sample_indices = (offset : sps : length(equalized_out));
 
             % Apply the offset to the sampling indices
-            sample_indices = (best_offset : sps : length(equalized_out));
             
             % Perform zero-threshold detection
             detected_bits = double(equalized_out(sample_indices) > 0);

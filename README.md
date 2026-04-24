@@ -265,12 +265,13 @@ Overall, the differences between the two filters are not as great as we were ini
 
 The critical SNR threshold is the point where the Bit Error Rate (BER) becomes high enough to visibly degrade the reconstructed image (typically around $10^{-2}$ or $10^{-3}$).
 
-- **Zero-Forcing (ZF) Equalizer:** Has a **higher critical SNR** (approx. 18-20 dB). Because ZF inverts the channel, it significantly amplifies noise at frequencies where the channel response is weak. This "noise enhancement" causes the system to fail quickly as noise increases.
-- **MMSE Equalizer:** Has a **lower critical SNR** (approx. 12-15 dB). By balancing channel inversion with noise suppression, the MMSE equalizer prevents extreme noise amplification, maintaining image integrity at much lower signal-to-noise ratios.
+
+
+
+
 
 #### Q16: Performance on Different Images
 
-When testing the system with different images (e.g., comparing our reference image with standard test images like *cameraman*), the fundamental performance of the equalizers remains consistent. While busy images with high-frequency textures might "mask" bit errors better than smooth, low-frequency images, the underlying Bit Error Rate is independent of the image content and depends solely on the modulation, channel, and noise parameters.
 
 #### Q17: Nyquist Criterion and Zero ISI
 
@@ -303,9 +304,7 @@ From the frequency response plots in question 1 and the modulated signal spectra
 
 #### Q20: Conclusion on Pulse Shaping
 
-Overall, w
-
-e found that the half sine is the better pulse shape. At σ^2 = 0, the two pulses are basically the same in terms of quality. At σ^2 = 0.005, the ZF equalizer on both pulses have ruoughly the same results but the MMSE equalizer performs much better with the half sine pulse. At all other noise levels and equalizers, the quality is about the same. This was surprising to us, since going into this project, we expected the SRRC to do much better since it minimizes spectral leakage (and thus reducing ISI), and is more bandiwdth efficient.
+Overall, we found that the half sine is the better pulse shape. At σ^2 = 0, the two pulses are basically the same in terms of quality. At σ^2 = 0.005, the ZF equalizer on both pulses have ruoughly the same results but the MMSE equalizer performs much better with the half sine pulse. At all other noise levels and equalizers, the quality is about the same. This was surprising to us, since going into this project, we expected the SRRC to do much better since it minimizes spectral leakage (and thus reducing ISI), and is more bandiwdth efficient.
 
 #### Q21: Performance under New Channels
 
