@@ -257,22 +257,7 @@ The result grid below showcases how each component contributes to the final imag
 
 ##### Key Observations:
 
-Overall, the differences between the two filters are not as great as we were initially expecting, but the SRRC seems marginally better, especially when the noise levels are much lower. However, at higher noise levels, the half-sine filter seems to do better. This seems odd since in class, we learned in class that SRRC is better by a lot, so these results seem very surprising. 
-
-1.  **Pulse Shaping Impact:**
-    *   **SRRC** generally outperforms **Half-Sine** in bandwidth-limited scenarios, though the differences are most visible when coupled with proper equalization.
-    *   Half-Sine exhibits more significant ISI due to its slower spectral decay, making it more dependent on the equalizer to "clean up" the channel's memory.
-
-2.  **Equalizer Performance (ZF vs. MMSE):**
-    *   **Zero-Forcing (ZF):** In low-noise scenarios ($\sigma^2 = 0.00$), ZF perfectly reconstructs the signal by inverting the channel. However, as noise increases, ZF's performance degrades rapidly. This is because the ZF filter amplifies noise at frequencies where the channel is weak, leading to significant pixelation and bit errors.
-    *   **MMSE:** The MMSE equalizer consistently produces superior results at higher noise levels. By balancing the inversion of the channel with noise suppression, it prevents the extreme noise amplification seen in ZF. This "regularization" allows the image structure to remain recognizable even at $\sigma^2 = 0.05$, where the ZF outputs are almost entirely destroyed.
-
-3.  **Noise Thresholds:**
-    *   At $\sigma^2 = 0.005$, both equalizers maintain high fidelity.
-    *   At $\sigma^2 = 0.02$, the MMSE images are still quite clear, while the ZF images begin to show significant salt-and-pepper noise.
-    *   At $\sigma^2 = 0.05$, the ZF images are nearly unrecognizable, while the MMSE + SRRC combination provides the most robust path for image recovery.
-
-This final analysis confirms that for a real-world, noisy channel, the **SRRC pulse shaping** combined with an **MMSE equalizer** offers the most resilient communication link for digital image transmission.
+Overall, the differences between the two filters are not as great as we were initially expecting, but the SRRC seems marginally better, especially when the noise levels are much lower. However, at higher noise levels, the half-sine filter seems to do better. This seems odd since in class, we learned in class that SRRC is better by a lot, so these results seem very surprising. In terms of the image quality as a whole, we suspect much of the poor quality is the result of a lot of ISI, which is what we were expecting. 
 
 <div class="page-break"></div>
 
@@ -280,7 +265,7 @@ This final analysis confirms that for a real-world, noisy channel, the **SRRC pu
 
 The critical SNR threshold is the point where the Bit Error Rate (BER) becomes high enough to visibly degrade the reconstructed image (typically around $10^{-2}$ or $10^{-3}$).
 
-- **Zero-Forcing (ZF) Equalizer:** Has a **higher critical SNR** (approx. 18-20 dB). Because ZF perfectly inverts the channel, it significantly amplifies noise at frequencies where the channel response is weak. This "noise enhancement" causes the system to fail quickly as noise increases.
+- **Zero-Forcing (ZF) Equalizer:** Has a **higher critical SNR** (approx. 18-20 dB). Because ZF inverts the channel, it significantly amplifies noise at frequencies where the channel response is weak. This "noise enhancement" causes the system to fail quickly as noise increases.
 - **MMSE Equalizer:** Has a **lower critical SNR** (approx. 12-15 dB). By balancing channel inversion with noise suppression, the MMSE equalizer prevents extreme noise amplification, maintaining image integrity at much lower signal-to-noise ratios.
 
 #### Q16: Performance on Different Images
@@ -289,26 +274,42 @@ When testing the system with different images (e.g., comparing our reference ima
 
 #### Q17: Nyquist Criterion and Zero ISI
 
-- **Nyquist Satisfaction:** Neither the half-sine nor the SRRC pulse satisfy the Nyquist criterion for zero ISI on their own. However, the **cascaded combination** of the transmit SRRC and the receive SRRC (Matched Filter) results in a **Raised Cosine (RC)** pulse, which *does* satisfy the Nyquist criterion.
-- **Zero ISI Point:** In an ideal system, zero ISI is expected at the sampling instants **after the matched filter**. In our non-ideal channel, the ISI introduced by the channel must be removed by the **equalizer** before we can achieve zero (or minimal) ISI at the detector.
-- **Observation:** Our implementation aligns with this theory, as evidenced by the open eyes seen only after proper equalization.
+PLOT THE OUTPUT OF THE MATCHED FILTER FOR BOTH PULSES FIRST:
+
+Again, from Q9, here is the eye diagram of both pulses across noise environments: 
+
+**Matched Filter Output Eye Diagram**
+
+![](./imgs/Q9/Matched_Filter_Eyes.jpg)
+
+For either output to satisfy the Nyquist criterion, the output eye diagrams would need to exhibit complete convergence at our determined sampling times for both pulses. In neither case is the Nyquist criterion for zero ISI at those sampling times met.
+
+However, the combination of the half-sine pulse output of the matched filter and the MMSE equalizer produces an output that does satisfy the Nyquist criterion. Those diagrams, originally shown in Q13, show the elimination of ISI at the ideal sampling point of the random bit stream.
+
+![](./imgs/Q13/MMSE_eye.jpg)
+
+Ideally, the output of the image data reflects the half-pulse used in conjuction with the MMSE equalizer being the best option for transmission when no noise is present in the system. However, it's likely that this advantage is drowned out by the properties demonstrated by the SRRC pulse at higher noise levels. 
+
+TODO ONCE BIT ERROR IS FIXED MAKE THIS LANGUAGE STRONGER
 
 #### Q18: Error Performance at Equal Energy
 
-In a theoretical AWGN channel with no ISI, any two pulses with the same energy will yield the same error performance ($P_b = Q(\sqrt{2E_b/N_0})$). However, in our bandwidth-limited channel:
-- **SRRC** typically performs better because its compact spectrum is less distorted by the channel filter.
-- **Half-Sine** suffers more because its high-frequency sidelobes are filtered out by the channel, creating more "memory" and ISI that the receiver must fight.
+We expect that the error performance is roughly the same between the two pulses. Since both pulses have the same energy, they sould have the same SNR at the reciever for the same noise power. Although, we would expect the ISI and filtering to be different between the two. The SRRC will have the response behave like a raised cosine pulse which reduces ISI at the sampling points. The half-sine pulse isn't meant to satisfy the Nyquist zero-ISI condition after the matched filter so the SRRC should have better error performance. 
+
+We used the images that were produced from 14. At σ^2 = 0.005 (with all other variables being kept constant),, looking at the half sine and the SRRC with the MMSE, the results are pretty similar, but the half sine looks marginially better. The eyes and outline of Mac Jones is much more pronounced in the half sine MMSE output while the SRRC output is more obscured. So, at this noise level, the half sine is more robust to noise under these conditions., even when both pulses have the same energy. THe differences could be because of how the channel, matched filter, and MMSE affect the two pulses. 
 
 #### Q19: Bandwidth and Pulse Length
 
 - **Bandwidth:** The half-sine pulse has a much larger bandwidth than the SRRC pulse. This is due to the sharp transitions in its time-domain shape, which correspond to slow $1/f^2$ decay in the frequency domain.
+
+
+
 - **Pulse Length:** The length of the SRRC pulse ($2K$ bit durations) is a trade-off. Increasing $K$ allows for a more ideal, "brick-wall" like frequency response with less truncation error, but it increases system latency and necessitates more complex equalization as each bit interferes with more of its neighbors.
+
 
 #### Q20: Conclusion on Pulse Shaping
 
-The **SRRC pulse** is the superior choice for modern digital communications.
-- **Advantages:** Superior spectral efficiency, controlled ISI via the Nyquist criterion (when matched), and better robustness in band-limited channels.
-- **Drawbacks:** Requires more computational power for convolution and introduces more delay than simple time-limited pulses like the half-sine.
+Overall, we have found that the SRRC pulse is worse in terms of ISI which is surprising because it contrasts with what we were taught in class.  
 
 #### Q21: Performance under New Channels
 

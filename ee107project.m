@@ -898,7 +898,8 @@ for n = 1:length(noise_vars_final)
         %
 
         %Sampling Starts here for the full image data
-        tx_symbols = 2 * binary_data(:) - 1;
+        % A is a factor to reduce error by increasing power
+        tx_symbols = (2 * binary_data(:) - 1);
         upsampled_tx = upsample(tx_symbols, sps);
         tx_signal = conv(upsampled_tx, current_pulse, 'same');
         
@@ -923,10 +924,9 @@ for n = 1:length(noise_vars_final)
                 q_t = fftshift(real(ifft(Q_f)));
                 equalized_out = conv(rx_noisy, q_t, 'same');
             end
+           
             
-            % Optimal Sampling and Detection
-            % Due to 'same' convolution and group delays, we find the first peak.
-            % For simplicity in this simulation, we use a fixed sample index based on bit duration.
+            % Apply the offset to the sampling indices
             sample_indices = (1 : sps : length(equalized_out));
             
             % Perform zero-threshold detection
@@ -958,7 +958,6 @@ for n = 1:length(noise_vars_final)
         end
     end
 end
-
 % Save the final grid
 exportgraphics(fig_all, 'imgs/Q14/Final_Result.jpg', 'Resolution', 300);
 fprintf('Full simulation complete. Results saved to imgs/Q14/Final_Result.jpg\n');
@@ -1030,7 +1029,7 @@ for c = 1:2
     sig_pwr_q21 = 0.005;
     
     % Reuse the long transmit signal from Q14 if available, or regenerate
-    tx_symbols = 2 * binary_data(:) - 1;
+    tx_symbols = 2 * binary_data(:) - 1; % A is a factor to increase power and decrease error
     upsampled_tx = upsample(tx_symbols, sps);
     tx_signal = conv(upsampled_tx, s, 'same');
     
