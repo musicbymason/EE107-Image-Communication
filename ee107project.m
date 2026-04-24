@@ -894,27 +894,29 @@ for n = 1:length(noise_vars_final)
         pulse_name = pulse_types{p};
         if p == 1
             current_pulse = y;
-            offset = 16; % Peak of Half-Sine = (sps/2 + 1)
+            offset = 17; % Peak of Half-Sine = (sps/2 + 1)
         else
             current_pulse = s;
             offset = 192; % Peak of SRRC = k*sps + 1
+            %offset = 386;
         end
         
         % Modulation of the entire image bit stream
 
-        %
-
         %Sampling Starts here for the full image data
-        % A is a factor to reduce error by increasing power
+        %Binary data bits ready for modulation
         tx_symbols = (2 * binary_data(:) - 1);
         upsampled_tx = upsample(tx_symbols, sps);
+        %fill 0's 
         tx_signal = conv(upsampled_tx, current_pulse, 'same');
+        %convolute based on the pulse shape
         
-        % Pass through Channel
-        channel_out = conv(tx_signal, h_vector, 'same');
+         % Pass through Channel
+        %channel_out = conv(tx_signal, h_upsampled, 'same');
+        % channel_out = filter(h_upsampled, 1, tx_signal);
         
         % Receiver: Add Noise (Consistent for both equalizers in this pulse/noise block)
-        rx_noisy = channel_out + (std_dev * randn(size(channel_out)));
+        %rx_noisy = channel_out + (std_dev * randn(size(channel_out)));
         
         for e = 1:2
             eq_name = equalizer_types{e};
@@ -922,35 +924,27 @@ for n = 1:length(noise_vars_final)
             % Equalization
             if e == 1 % ZF
                 % Match Filter first
-                mf_out = conv(rx_noisy, flip(current_pulse), 'same');
+                %mf_out = conv(rx_noisy, flip(current_pulse), 'same');
+                mf_out = conv(tx_signal, current_pulse, 'same');
                 % ZF Equalizer (using the filter definition from Q11)
-                equalized_out = filter(1, h_upsampled, mf_out);
+                %equalized_out = filter(1, h_upsampled, mf_out);
+
             else % MMSE
                 % Matched Filter First
-                mf_out = conv(rx_noisy, flip(current_pulse), 'same');
+                mf_out = conv(tx_signal, flip(current_pulse), 'same');
                 
                 % MMSE Equalizer (using the filter definition from Q13)
-                Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
-                q_t = fftshift(real(ifft(Q_f)));
-                equalized_out = conv(mf_out, q_t, 'same');
+                % Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
+                % q_t = fftshift(real(ifft(Q_f)));
+                % equalized_out = conv(mf_out, q_t, 'same');
             end
-
-            % // test_impulse = zeros(sps * 10, 1); test_impulse(1) = 1;
-            % // test_tx = filter(current_pulse, 1, test_impulse);
-            % // test_chan = filter(h_upsampled, 1, test_tx);
-            % // if e == 1 % ZF
-            % //     test_eq = filter(1, h_upsampled, filter(flip(current_pulse), 1, test_chan));
-            % // else % MMSE
-            % //     test_eq = conv(test_chan, q_t, 'same');
-            % // end
-            % // [~, best_offset] = max(abs(test_eq));
             
-            sample_indices = (offset : sps : length(equalized_out));
-
-            % Apply the offset to the sampling indices
+            %Our sampling indexes
+            % sample_indices = (offset : sps : length(equalized_out));
+            sample_indices = (offset : sps : length(mf_out));
             
             % Perform zero-threshold detection
-            detected_bits = double(equalized_out(sample_indices) > 0);
+            %detected_bits = double(equalized_out(sample_indices) > 0);
             detected_bits = detected_bits(:);
             
             % Ensure detected_bits matches original length
