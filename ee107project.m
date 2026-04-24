@@ -25,7 +25,7 @@ function [binary_data, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, D
 
    %Conversion to a bit stream
 
-   DCT_3d_column = reshape(DCT_3D_array, [64, 1, N]); % creates a 3D row vector of depth N
+   DCT_3d_column = reshape(DCT_3D_array, [64, 1, total_blocks]); % creates a 3D row vector of depth N
 
    % Scale 0-1 to 0-255 and convert to 8-bit integers
    DCT_int = uint8(DCT_3d_column * 255);
@@ -44,18 +44,23 @@ function [binary_data, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, D
    binary_3D = permute(reshaped_array, [2, 1, 3]);
 end
 
-%Post processing Image Reconstruction
 function [reconstructed_image] = postprocess_image(received_bits, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max, N)
     %  Convert bits back to 8-bit integers
     
     received_integers = bit2int(received_bits, 8);
     
-    % Reshape back to the 3D block array [64 x 1 x N]
-    DCT_3d_column = reshape(received_integers, [64, 1, N]);
+    % FIX: Compute actual number of blocks from the received data
+    % Each block has 64 coefficients, each coefficient is 1 integer
+    num_blocks = length(received_integers) / 64;
+    
+    % Reshape back to the 3D block array [64 x 1 x num_blocks]
+    DCT_3d_column = reshape(received_integers, [64, 1, num_blocks]);
     
     % Scale back to 0-1 and then to DCT range
     DCT_normalized = double(DCT_3d_column) / 255;
-    DCT_3D_array = reshape(DCT_normalized * (DCT_Image_max - DCT_Image_min) + DCT_Image_min, [8, 8, N]);
+    
+    % FIX: Use num_blocks instead of N here too
+    DCT_3D_array = reshape(DCT_normalized * (DCT_Image_max - DCT_Image_min) + DCT_Image_min, [8, 8, num_blocks]);
     
     % Re-order blocks into the full image matrix
     m = scaled_DCT_dimensions(1);
@@ -889,8 +894,10 @@ for n = 1:length(noise_vars_final)
         pulse_name = pulse_types{p};
         if p == 1
             current_pulse = y;
+            offset = 17; % Peak of Half-Sine = (sps/2 + 1)
         else
             current_pulse = s;
+            offset = 193; % Peak of SRRC = k*sps + 1
         end
         
         % Modulation of the entire image bit stream
@@ -919,25 +926,40 @@ for n = 1:length(noise_vars_final)
                 % ZF Equalizer (using the filter definition from Q11)
                 equalized_out = filter(1, h_upsampled, mf_out);
             else % MMSE
+                % Matched Filter First
+                mf_out = conv(rx_noisy, flip(current_pulse), 'same');
+                
                 % MMSE Equalizer (using the filter definition from Q13)
                 Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
                 q_t = fftshift(real(ifft(Q_f)));
-                equalized_out = conv(rx_noisy, q_t, 'same');
+                equalized_out = conv(mf_out, q_t, 'same');
             end
-           
+
+            test_impulse = zeros(sps * 10, 1); test_impulse(1) = 1;
+            test_tx = filter(current_pulse, 1, test_impulse);
+            test_chan = filter(h_upsampled, 1, test_tx);
+            if e == 1 % ZF
+                test_eq = filter(1, h_upsampled, filter(flip(current_pulse), 1, test_chan));
+            else % MMSE
+                test_eq = conv(test_chan, q_t, 'same');
+            end
+            [~, best_offset] = max(abs(test_eq));
             
+            sample_indices = (best_offset : sps : length(equalized_out));
+            fprintf('Best sampling offset for %s + %s, \\sigma^2=%.3f: %d\n', pulse_name, eq_name, sig_pwr, best_offset);
+
             % Apply the offset to the sampling indices
-            sample_indices = (1 : sps : length(equalized_out));
+            sample_indices = (best_offset : sps : length(equalized_out));
             
             % Perform zero-threshold detection
             detected_bits = double(equalized_out(sample_indices) > 0);
             detected_bits = detected_bits(:);
             
             % Ensure detected_bits matches original length
-            if length(detected_bits) > length(binary_data)
-                detected_bits = detected_bits(1:length(binary_data));
-            elseif length(detected_bits) < length(binary_data)
-                detected_bits = [detected_bits; zeros(length(binary_data) - length(detected_bits), 1)];
+            if length(detected_bits) > numel(binary_data)
+                detected_bits = detected_bits(1:numel(binary_data));
+            elseif length(detected_bits) < numel(binary_data)
+                detected_bits = [detected_bits; zeros(numel(binary_data) - length(detected_bits), 1)];
             end
             
             % Reconstruct the image

@@ -288,28 +288,24 @@ However, the combination of the half-sine pulse output of the matched filter and
 
 ![](./imgs/Q13/MMSE_eye.jpg)
 
-Ideally, the output of the image data reflects the half-pulse used in conjuction with the MMSE equalizer being the best option for transmission when no noise is present in the system. However, it's likely that this advantage is drowned out by the properties demonstrated by the SRRC pulse at higher noise levels. 
-
-TODO ONCE BIT ERROR IS FIXED MAKE THIS LANGUAGE STRONGER
+Ideally, the output of the image data reflects the half-pulse used in conjuction with the MMSE equalizer being the best option for transmission when no noise is present in the system. However, it's likely that this advantageous quality is drowned out by the properties demonstrated by the SRRC pulse at higher noise levels. 
 
 #### Q18: Error Performance at Equal Energy
 
-We expect that the error performance is roughly the same between the two pulses. Since both pulses have the same energy, they sould have the same SNR at the reciever for the same noise power. Although, we would expect the ISI and filtering to be different between the two. The SRRC will have the response behave like a raised cosine pulse which reduces ISI at the sampling points. The half-sine pulse isn't meant to satisfy the Nyquist zero-ISI condition after the matched filter so the SRRC should have better error performance. 
+We expected that the error performance is roughly the same between the two pulses. Since both pulses have the same energy, they sould have the same SNR at the reciever for the same noise power. Although, we would expect the ISI and filtering to be different between the two. The SRRC will have the response behave like a raised cosine pulse which reduces ISI at the sampling points. The half-sine pulse isn't meant to satisfy the Nyquist zero-ISI condition after the matched filter so the SRRC should have better error performance. 
 
 We used the images that were produced from 14. At σ^2 = 0.005 (with all other variables being kept constant),, looking at the half sine and the SRRC with the MMSE, the results are pretty similar, but the half sine looks marginially better. The eyes and outline of Mac Jones is much more pronounced in the half sine MMSE output while the SRRC output is more obscured. So, at this noise level, the half sine is more robust to noise under these conditions., even when both pulses have the same energy. THe differences could be because of how the channel, matched filter, and MMSE affect the two pulses. 
 
 #### Q19: Bandwidth and Pulse Length
 
-- **Bandwidth:** The half-sine pulse has a much larger bandwidth than the SRRC pulse. This is due to the sharp transitions in its time-domain shape, which correspond to slow $1/f^2$ decay in the frequency domain.
-
-
-
-- **Pulse Length:** The length of the SRRC pulse ($2K$ bit durations) is a trade-off. Increasing $K$ allows for a more ideal, "brick-wall" like frequency response with less truncation error, but it increases system latency and necessitates more complex equalization as each bit interferes with more of its neighbors.
+From the frequency response plots in question 1 and the modulated signal spectra in question 3, we can see that the half sine pulse has a higher bandiwth with many sidelobes being far beyond the main lobe. The SRRC pulse, however, has its sidelobes closer to the main lobe and has a smaller bandwidth. The half sine pulse only happens for one period so since its short in the time domain, its extends a lot in the frequency domain. The SRRC is wider in time and more compact in the frequency domain due to it spanning more time intervals of each transmitted symbol. The SRRC is more bandwidth efficient (because of the smaller bandiwdth and because it reduces the components that are out of the frequency range we are looking at. This is good since the bandwidth is limited in our case. But, the longer duration of the SRRC causes more symbol overlap which could lead to  higher ISI.
 
 
 #### Q20: Conclusion on Pulse Shaping
 
-Overall, we have found that the SRRC pulse is worse in terms of ISI which is surprising because it contrasts with what we were taught in class.  
+Overall, w
+
+e found that the half sine is the better pulse shape. At σ^2 = 0, the two pulses are basically the same in terms of quality. At σ^2 = 0.005, the ZF equalizer on both pulses have ruoughly the same results but the MMSE equalizer performs much better with the half sine pulse. At all other noise levels and equalizers, the quality is about the same. This was surprising to us, since going into this project, we expected the SRRC to do much better since it minimizes spectral leakage (and thus reducing ISI), and is more bandiwdth efficient.
 
 #### Q21: Performance under New Channels
 
@@ -320,6 +316,3 @@ We tested the system under two additional wireless channel models:
 
 2.  **Indoor Channel ($h_2$):** Characterized by shorter, rapidly decaying echoes. While it has a lower power gain ($\approx 1.234$), its performance is generally better because the ISI is "short-lived" and more easily corrected by the MMSE equalizer.
 ![](./imgs/Q21/Recovered_Indoor.jpg)
-
-
-
