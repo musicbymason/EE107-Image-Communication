@@ -894,10 +894,10 @@ for n = 1:length(noise_vars_final)
         pulse_name = pulse_types{p};
         if p == 1
             current_pulse = y;
-            offset = 17; % Peak of Half-Sine = (sps/2 + 1)
+            offset = 16; % Peak of Half-Sine = (sps/2 + 1)
         else
             current_pulse = s;
-            offset = 192; % Peak of SRRC = k*sps + 1
+            offset = 193; % Peak of SRRC = k*sps + 1
             %offset = 386;
         end
         
@@ -911,64 +911,41 @@ for n = 1:length(noise_vars_final)
         tx_signal = conv(upsampled_tx, current_pulse, 'same');
         %convolute based on the pulse shape
         
-         % Pass through Channel
-        %channel_out = conv(tx_signal, h_upsampled, 'same');
+        % Pass through Channel
+        channel_out = conv(tx_signal, h_upsampled, 'same');
         % channel_out = filter(h_upsampled, 1, tx_signal);
         
         % Receiver: Add Noise (Consistent for both equalizers in this pulse/noise block)
-        %rx_noisy = channel_out + (std_dev * randn(size(channel_out)));
+        rx_noisy = channel_out + (std_dev * randn(size(channel_out)));
         
         for e = 1:2
             eq_name = equalizer_types{e};
             
-            % Equalization
             if e == 1 % ZF
-                % Match Filter first
-                %mf_out = conv(rx_noisy, flip(current_pulse), 'same');
-                mf_out = conv(tx_signal, current_pulse, 'same');
-                % ZF Equalizer (using the filter definition from Q11)
-                %equalized_out = filter(1, h_upsampled, mf_out);
-
+                % 1. Matched Filter the NOISY received signal
+                mf_out = conv(rx_noisy, current_pulse, 'same');
+                % 2. Equalize
+                equalized_out = filter(1, h_upsampled, mf_out);
             else % MMSE
-                % Matched Filter First
-                mf_out = conv(tx_signal, flip(current_pulse), 'same');
-                
-                % MMSE Equalizer (using the filter definition from Q13)
-                % Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
-                % q_t = fftshift(real(ifft(Q_f)));
-                % equalized_out = conv(mf_out, q_t, 'same');
+                % 1. Matched Filter the NOISY received signal
+                mf_out = conv(rx_noisy, flip(current_pulse), 'same');
+                % 2. Equalize (Fixing the typo "qualized_out")
+                Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
+                q_t = fftshift(real(ifft(Q_f)));
+                equalized_out = conv(mf_out, q_t, 'same');
             end
             
-            %Our sampling indexes
-            % sample_indices = (offset : sps : length(equalized_out));
-            sample_indices = (offset : sps : length(mf_out));
+            % 3. Sample the final equalized signal
+            sample_indices = (offset : sps : length(equalized_out));
             
-            % Perform zero-threshold detection
-            %detected_bits = double(equalized_out(sample_indices) > 0);
-            detected_bits = detected_bits(:);
+            % 4. Perform detection
+            detected_bits = double(equalized_out(sample_indices) > 0);
+            detected_bits = detected_bits(:); 
             
-            % Ensure detected_bits matches original length
             if length(detected_bits) > numel(binary_data)
                 detected_bits = detected_bits(1:numel(binary_data));
-            elseif length(detected_bits) < numel(binary_data)
-                detected_bits = [detected_bits; zeros(numel(binary_data) - length(detected_bits), 1)];
             end
             
-            % Reconstruct the image
-            recovered_img = postprocess_image(detected_bits, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max, N);
-            
-            % Plotting in the grid
-            figure(fig_all);
-            subplot(4, 4, plot_idx);
-            imshow(recovered_img);
-            title(sprintf('%s+%s, \\sigma^2=%.3f', pulse_name, eq_name, sig_pwr), 'FontSize', 9);
-            
-            % Calculate BER
-            errors = sum(binary_data(:) ~= detected_bits);
-            ber = errors / length(binary_data);
-            fprintf('BER [%s + %s, n=%.3f]: %.4e\n', pulse_name, eq_name, sig_pwr, ber);
-            
-            plot_idx = plot_idx + 1;
         end
     end
 end
