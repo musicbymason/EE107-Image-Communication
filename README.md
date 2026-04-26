@@ -257,8 +257,7 @@ The result grid below showcases how each component contributes to the final imag
 
 ##### Key Observations:
 
-Overall, the SRRC pulse shape has a drastic difference in performance in respect to noise over the Half-sine pulse. The output of our final images are a clear resemblance to the input picture and while there are some BER issues to work out, the images are able to be fully processed out. These array of images show how the pulse shapes and the equalizers work to better protect against noise and other factors. In addition we have found that the MMSE has a vastly improved performance with noise than the ZF.
-  
+Overall, MMSE equalizer has a clearer and much better performance as the noise level increases throughout the trials. With lower noise there is little difference (if any the MMSE is worse), however the special effects of the MMSE is shown when the noise levels are increased and there are less bit errors. For difference in pulses there seems to be little if any difference in the behavoir between the pulse shapes. The outcome of each image is almost entirely the same.
 
 <div class="page-break"></div>
 
@@ -271,6 +270,11 @@ SRRC: The critical SNR threshold is the point where the Bit Error Rate (BER) bec
 
 #### Q16: Performance on Different Images
 
+Below are the results for doing the same analysis and modulation on a picture of Raven's QB Lamar Jackson:
+
+![](./imgs/Q16/Final_Result.jpg)
+
+From the image above we can clearly see that the effects on the new image is almost identical as to the original image of Mac Jones. The difference between the two pulses and the two different equalizers are the same variance as it was in the first test of Mac. We can see that as the noise increased the MMSE equalizer has a vastly better effect on handling the noise and having a much clearer output. As for the pulse shape, the results (just like the original image) are almost identical to each other. It seems that pulse shape has no difference when simulated from our simulation results.
 
 #### Q17: Nyquist Criterion and Zero ISI
 
@@ -303,6 +307,8 @@ From the frequency response plots in question 1 and the modulated signal spectra
 
 
 #### Q20: Conclusion on Pulse Shaping
+
+
 
 
 #### Q21: Performance Under New Channels

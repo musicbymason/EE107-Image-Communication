@@ -246,14 +246,14 @@ function [upsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_mod
 end 
 
 % 2/2.3 - Processing Selected Image, Turning into Binary Bit Stream
-image_path = 'imgs/macjones.jpg';
+image_path = 'imgs/lamar.jpg';
 N = 14400; % Determined blocks to send - total number of blocks
 
 % Headless mode: Generate and export graphics without opening windows
 set(groot, 'DefaultFigureVisible', 'off');
 
 % Ensure all image directories exist
-q_dirs = {'imgs/Q1', 'imgs/Q2', 'imgs/Q3', 'imgs/Q4', 'imgs/Q5', 'imgs/Q6', 'imgs/Q7', 'imgs/Q8', 'imgs/Q9', 'imgs/Q10', 'imgs/Q11', 'imgs/Q12', 'imgs/Q13', 'imgs/Q14', 'imgs/Q15', 'imgs/Q21'};
+q_dirs = {'imgs/Q1', 'imgs/Q2', 'imgs/Q3', 'imgs/Q4', 'imgs/Q5', 'imgs/Q6', 'imgs/Q7', 'imgs/Q8', 'imgs/Q9', 'imgs/Q10', 'imgs/Q11', 'imgs/Q12', 'imgs/Q13', 'imgs/Q14', 'imgs/Q15', 'imgs/Q16', 'imgs/Q21'};
 for i = 1:length(q_dirs)
     if ~exist(q_dirs{i}, 'dir'), mkdir(q_dirs{i}); end
 end
@@ -275,16 +275,16 @@ sps = 32; % 32 Samples for both the half sine and SRRC
 T = 1;    % Duration in seconds
 %y is our time domain half-sine pulse with 32 samples for 0 <= t < 1
 y = half_sine_pulse(sps, T); %designs and then plots the half sine pulse in time and frequency domain
-exportgraphics(figure(1), 'imgs/Q1/Q1_thalfsine.jpg', 'Resolution', 300);
-exportgraphics(figure(2), 'imgs/Q1/Q1_fhalfsine.jpg', 'Resolution', 300);
+% exportgraphics(figure(1), 'imgs/Q1/Q1_thalfsine.jpg', 'Resolution', 300);
+% exportgraphics(figure(2), 'imgs/Q1/Q1_fhalfsine.jpg', 'Resolution', 300);
 
 %SRRC
 alpha = 0.5;
 k = 6;
 %s is our time domain SRRC pulse with 32 samples per bit, and a total duration of 2*K bit times
 s = srrc_pulse(alpha, k, sps); %designs and then plots the SRRC pulse in time and frequency domain
-exportgraphics(figure(3), 'imgs/Q1/Q1_tsrrc.jpg', 'Resolution', 300);
-exportgraphics(figure(4), 'imgs/Q1/Q1_fsrrc.jpg', 'Resolution', 300);
+% exportgraphics(figure(3), 'imgs/Q1/Q1_tsrrc.jpg', 'Resolution', 300);
+% exportgraphics(figure(4), 'imgs/Q1/Q1_fsrrc.jpg', 'Resolution', 300);
 
 %------------QUESTION 2 & 3 MODULATED SIGNALS PLOT 10 RANDOM BITS----------------
 
@@ -292,8 +292,8 @@ exportgraphics(figure(4), 'imgs/Q1/Q1_fsrrc.jpg', 'Resolution', 300);
 [unsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_modulation(sps, k, s, y); 
 %unsampled_symbols is the original 10 random bits mapped to PAM symbols and upsampled (with zeros in between)
 %modulated_half_sine and modulated_srrc are the convolution of the upsampled symbols with the pulses
-exportgraphics(figure(5), 'imgs/Q2/Q2_mod.jpg', 'Resolution', 300);
-exportgraphics(figure(6), 'imgs/Q3/Q3_spectra.jpg', 'Resolution', 300);
+% exportgraphics(figure(5), 'imgs/Q2/Q2_mod.jpg', 'Resolution', 300);
+% exportgraphics(figure(6), 'imgs/Q3/Q3_spectra.jpg', 'Resolution', 300);
 
 %-------------------------------------QUESTION 4 EYE DIAGRAM---------------------------------------
 
@@ -324,7 +324,7 @@ eyediagram(mod_eye_half_sine(offset_half_sine:end), sps, 1, 0);
 title('Transmit Eye Diagram: Half-sine Pulse', 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
-exportgraphics(gcf, 'imgs/Q4/Q4_hseye.jpg', 'Resolution', 300);
+% exportgraphics(gcf, 'imgs/Q4/Q4_hseye.jpg', 'Resolution', 300);
 
 % --- SRRC Eye Diagram ---
 % Note: The SRRC pulse spans multiple bit durations and is symmetric around
@@ -335,7 +335,7 @@ eyediagram(mod_eye_srrc(offset_srrc:end), sps, 1, 0);
 title(sprintf('Transmit Eye Diagram: SRRC Pulse (\\alpha = %.1f, K = %d)', alpha, k), 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
-exportgraphics(gcf, 'imgs/Q4/Q4_srrceye.jpg', 'Resolution', 300);
+% exportgraphics(gcf, 'imgs/Q4/Q4_srrceye.jpg', 'Resolution', 300);
 
 %------------------------QUESTION 5 Channel Simulation and Visualization --------------------------
 
@@ -391,7 +391,7 @@ title('Channel Phase Response', 'FontSize', 12, 'FontWeight', 'bold');
 xlabel('Normalized Frequency (\times\pi rad/sample)', 'FontSize', 11);
 ylabel('Phase (rad)', 'FontSize', 11);
 grid on;
-exportgraphics(figQ5, 'imgs/Q5/Q5_Channel_Responses.jpg', 'Resolution', 300);
+% exportgraphics(figQ5, 'imgs/Q5/Q5_Channel_Responses.jpg', 'Resolution', 300);
 
 %------------------------QUESTION 6 Channel Modulation Eye Diagrams --------------------------
 % We convolute channel impulse vector with the modulated signals we made in Question 2 to plot the eye diagram of the channel output for each pulse shape.
@@ -403,14 +403,14 @@ eyediagram(channel_output_eye_half_sine(offset_half_sine:end), sps, 1, 0);
 title('Eye Diagram: Half-sine (After Channel)', 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
-exportgraphics(gcf, 'imgs/Q6/After_Channel_Eye_HS.jpg', 'Resolution', 300);
+% exportgraphics(gcf, 'imgs/Q6/After_Channel_Eye_HS.jpg', 'Resolution', 300);
 
 % SRRC Eye Diagram after channel
 eyediagram(channel_output_eye_srrc(offset_srrc:end), sps, 1, 0);
 title(sprintf('Eye Diagram: SRRC (After Channel) (\alpha = %.1f, K = %d)', alpha, k), 'FontSize', 12, 'FontWeight', 'bold');
 ylabel('Amplitude', 'FontSize', 11);
 xlabel('Time (s)', 'FontSize', 11);
-exportgraphics(gcf, 'imgs/Q6/After_Channel_Eye_SRRC.jpg', 'Resolution', 300);
+% exportgraphics(gcf, 'imgs/Q6/After_Channel_Eye_SRRC.jpg', 'Resolution', 300);
 
 %------------------ QUESTION 7: Multi-Noise Eye Diagram Analysis ------------------
 noise_variances = [0.00, 0.005, 0.02]; % Clean, Medium, Heavy Noise
@@ -458,7 +458,7 @@ if ~exist(targetDir, 'dir')
     mkdir(targetDir);
 end
 fullPath = fullfile(targetDir, 'Combined_Noise_Analysis.jpg');
-exportgraphics(figQ7, fullPath, 'Resolution', 300);
+% exportgraphics(figQ7, fullPath, 'Resolution', 300);
 
 
 %- Q8: Matched Filter Time/Freq Analysis
@@ -504,7 +504,7 @@ end
 subplot(3,2,5); xlabel('Samples');
 subplot(3,2,6); xlabel('Frequency (normalized)');
 
-exportgraphics(figQ8, 'imgs/Q8/matched.jpg', 'Resolution', 300);
+% exportgraphics(figQ8, 'imgs/Q8/matched.jpg', 'Resolution', 300);
 
 %------------------ QUESTION 9: Matched Filter Eye Diagrams ------------------
 figQ9_1B = figure('Name', 'Q9: Matched Filter Eye Diagrams - 1-Bit', 'Position', [100, 100, 1000, 1200]);
@@ -543,7 +543,7 @@ end
 subplot(3,2,5); xlabel('Samples (1-Bit Duration)');
 subplot(3,2,6); xlabel('Samples (1-Bit Duration)');
 
-exportgraphics(figQ9_1B, 'imgs/Q9/Matched_Filter_Eyes_1bit.jpg', 'Resolution', 300);
+% exportgraphics(figQ9_1B, 'imgs/Q9/Matched_Filter_Eyes_1bit.jpg', 'Resolution', 300);
 
 figQ9_2B = figure('Name', 'Q9: Matched Filter Eye Diagrams - 2-Bit', 'Position', [100, 100, 1000, 1200]);
 half_symbol = sps / 2;
@@ -581,7 +581,7 @@ end
 subplot(3,2,5); xlabel('Samples (2-Bit Duration)');
 subplot(3,2,6); xlabel('Samples (2-Bit Duration)');
 
-exportgraphics(figQ9_2B, 'imgs/Q9/Matched_Filter_Eyes.jpg', 'Resolution', 300);
+% exportgraphics(figQ9_2B, 'imgs/Q9/Matched_Filter_Eyes.jpg', 'Resolution', 300);
 
 %-10 & 11: Zero-Forcing Equalizer 
 
@@ -616,7 +616,7 @@ grid on;
 title('Q10: ZF Equalizer Impulse Response (q[n])', 'FontSize', 12, 'FontWeight', 'bold');
 xlabel('Sample Index');
 ylabel('Amplitude');
-exportgraphics(figQ10, 'imgs/Q10/Q10.jpg', 'Resolution', 300);
+% exportgraphics(figQ10, 'imgs/Q10/Q10.jpg', 'Resolution', 300);
 
 %Q11:
 %Eye diagram for both pulse shapes after ZF equalization with no noise, with medium noise, and with heavy noise.
@@ -713,13 +713,13 @@ for i = 1:num_vars
     ylabel('Amplitude'); xlabel('Time (Bit Durations)');
     grid on; xlim([-1 11]); ylim([-1.5 1.5]);
 end
-exportgraphics(figure_zf_10bit, 'imgs/Q11/ZF_time_10bit.jpg', 'Resolution', 300);
+% exportgraphics(figure_zf_10bit, 'imgs/Q11/ZF_time_10bit.jpg', 'Resolution', 300);
 
 % Format and Export the unified Eye Diagram figure for Q11
 figure(figQ11_Eyes);
 subplot(num_vars, 2, num_vars*2 - 1); xlabel('Samples (2 Symbol Periods)');
 subplot(num_vars, 2, num_vars*2); xlabel('Samples (2 Symbol Periods)');
-exportgraphics(figQ11_Eyes, 'imgs/Q11/ZF_Eyes_Combined.jpg', 'Resolution', 300);
+% exportgraphics(figQ11_Eyes, 'imgs/Q11/ZF_Eyes_Combined.jpg', 'Resolution', 300);
 
 %Q12 - MMSE Equalizer Implementation and Impulse/Frequency plots accross all 3 noise cases
 % Parameters
@@ -755,7 +755,7 @@ for i = 1:length(noise_variances)
     if i == 3, xlabel('Frequency (Hz)'); end
 end
 
-exportgraphics(gcf, 'imgs/Q12/MMSE_freq.jpg', 'Resolution', 300);
+%exportgraphics(gcf, 'imgs/Q12/MMSE_freq.jpg', 'Resolution', 300);
 
 %Q13 - Eye diagrams for both pulse shapes after MMSE equalization with no noise, with medium noise, and with heavy noise.
 % Setup figures BEFORE the loop
@@ -864,10 +864,10 @@ subplot(num_vars, 2, num_vars*2); xlabel('Samples (2 Symbol Periods)');
 % Optional: Ensure directories exist before exporting
 if ~exist('imgs/Q13', 'dir'), mkdir('imgs/Q13'); end
 
-exportgraphics(figQ13, 'imgs/Q13/MMSE_eye.jpg', 'Resolution', 300);
+%exportgraphics(figQ13, 'imgs/Q13/MMSE_eye.jpg', 'Resolution', 300);
 
 figure(figTime_MMSE_10bit);
-exportgraphics(figTime_MMSE_10bit, 'imgs/Q13/MMSE_time_10bit.jpg', 'Resolution', 300);
+%exportgraphics(figTime_MMSE_10bit, 'imgs/Q13/MMSE_time_10bit.jpg', 'Resolution', 300);
 
 
 close all;
@@ -971,7 +971,7 @@ end
 
 
 % Save the final grid
-exportgraphics(fig_all, 'imgs/Q14/Final_Result.jpg', 'Resolution', 300);
+exportgraphics(fig_all, 'imgs/Q16/Final_Result.jpg', 'Resolution', 300);
 fprintf('Full simulation complete. Results saved to imgs/Q14/Final_Result.jpg\n');
 
 
@@ -1014,7 +1014,7 @@ semilogy(snr_db_range, ber_zf, 'o-', 'DisplayName', 'ZF'); hold on;
 semilogy(snr_db_range, ber_mmse, 's-', 'DisplayName', 'MMSE');
 grid on; xlabel('SNR (dB)'); ylabel('BER');
 title('Bit Error Rate Comparison'); legend;
-exportgraphics(figQ15, 'imgs/Q15/Q15_BER_Curves.jpg');
+%exportgraphics(figQ15, 'imgs/Q15/Q15_BER_Curves.jpg');
 
 %% Q16: Performance on Different Images
 % We already used macjones.jpg. 
@@ -1062,7 +1062,7 @@ for c = 1:2
     
     figure; imshow(recovered_img_q21);
     title(sprintf('Recovered Image: %s Channel', chan_names{c}));
-    exportgraphics(gcf, sprintf('imgs/Q21/Recovered_%s.jpg', chan_names{c}));
+    % exportgraphics(gcf, sprintf('imgs/Q21/Recovered_%s.jpg', chan_names{c}));
     
     % Power gain
     power_gain = sum(abs(h_taps_new).^2);
