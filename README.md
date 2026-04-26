@@ -77,7 +77,7 @@ And the frequency domain dB plots:
 
 ![](./imgs/Q1/Q1_fsrrc.jpg)
 
-![](./imgs/Q 1/Q1_fa0,1.jpg)
+![](./imgs/Q1/Q1_fa0,1.jpg)
 
 The half-sine frequency response uses more bandwidth that the SRRC pulse. The SRRC response has a flat response until ~ 0.5 Hz (which is shown by our rolloff factor alpha), and then drops off. 
 
