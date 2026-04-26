@@ -178,8 +178,8 @@ function [upsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_mod
    % Upsample the symbols to match the sampling rate (insert 31 zeros between symbols)
    upsampled_symbols = upsample(symbols, sps);
 
-   modulated_half_sine = conv(upsampled_symbols, y);
-   modulated_srrc = conv(upsampled_symbols, s);
+   modulated_half_sine = conv(upsampled_symbols, y, 'full');
+   modulated_srrc = conv(upsampled_symbols, s, 'full');
 
    %modulate the unsampled symbols by doing a convolution "conv" between the unsampled symbols and the pulses (half sine, SRRC) in the time domain. 
    % Time axes for the modulated signals
@@ -249,6 +249,9 @@ end
 image_path = 'imgs/macjones.jpg';
 N = 14400; % Determined blocks to send - total number of blocks
 
+% Headless mode: Generate and export graphics without opening windows
+set(groot, 'DefaultFigureVisible', 'off');
+
 % Ensure all image directories exist
 q_dirs = {'imgs/Q1', 'imgs/Q2', 'imgs/Q3', 'imgs/Q4', 'imgs/Q5', 'imgs/Q6', 'imgs/Q7', 'imgs/Q8', 'imgs/Q9', 'imgs/Q10', 'imgs/Q11', 'imgs/Q12', 'imgs/Q13', 'imgs/Q14', 'imgs/Q15', 'imgs/Q21'};
 for i = 1:length(q_dirs)
@@ -302,8 +305,8 @@ eye_symbols = 2*eye_bits - 1;
 upsampled_eye_symbols = upsample(eye_symbols, sps);
 
 % Modulate the long sequence
-mod_eye_half_sine = conv(upsampled_eye_symbols, y);
-mod_eye_srrc = conv(upsampled_eye_symbols, s);
+mod_eye_half_sine = conv(upsampled_eye_symbols, y, 'full');
+mod_eye_srrc = conv(upsampled_eye_symbols, s, 'full');
 
 % Create Eye Diagrams using MATLAB's built-in eyediagram function
 % Parameters:
@@ -353,8 +356,8 @@ h_vector = [h_upsampled, zeros(1, next_power_of_2 - current_length)];
 
 % we convolute this vector with the modulated signals we made in Question 2 to simulate effect of channel on transmitted message
 
-channel_output_half_sine = conv(modulated_half_sine, h_vector);
-channel_output_srrc = conv(modulated_srrc, h_vector);
+channel_output_half_sine = conv(modulated_half_sine, h_vector, 'full');
+channel_output_srrc = conv(modulated_srrc, h_vector, 'full');
 
 % Channel Impulse and Frequency Responses plotted
 
@@ -392,8 +395,8 @@ exportgraphics(figQ5, 'imgs/Q5/Q5_Channel_Responses.jpg', 'Resolution', 300);
 
 %------------------------QUESTION 6 Channel Modulation Eye Diagrams --------------------------
 % We convolute channel impulse vector with the modulated signals we made in Question 2 to plot the eye diagram of the channel output for each pulse shape.
-channel_output_eye_half_sine = conv(mod_eye_half_sine, h_vector);
-channel_output_eye_srrc = conv(mod_eye_srrc, h_vector);
+channel_output_eye_half_sine = conv(mod_eye_half_sine, h_vector, 'full');
+channel_output_eye_srrc = conv(mod_eye_srrc, h_vector, 'full');
 
 % Half-sine Eye Diagram after channel
 eyediagram(channel_output_eye_half_sine(offset_half_sine:end), sps, 1, 0);
@@ -473,8 +476,8 @@ for i = 1:length(noise_variances)
     rx_hs_noisy = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
     rx_srrc_noisy = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
     
-    mf_hs = conv(rx_hs_noisy, flip(y), 'same'); 
-    mf_srrc = conv(rx_srrc_noisy, flip(s), 'same');
+    mf_hs = conv(rx_hs_noisy, flip(y), 'full'); 
+    mf_srrc = conv(rx_srrc_noisy, flip(s), 'full');
     
     % 2. Plot Time Domain (Left Column)
     subplot(3, 2, 2*i - 1);
@@ -515,8 +518,8 @@ for i = 1:length(noise_variances)
     rx_hs = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
     rx_srrc = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
     
-    mf_hs = conv(rx_hs, flip(y), 'same');
-    mf_srrc = conv(rx_srrc, flip(s), 'same');
+    mf_hs = conv(rx_hs, flip(y), 'full');
+    mf_srrc = conv(rx_srrc, flip(s), 'full');
     
     % 2. Plot Matched Filter Eye - Half-Sine (Left Column)
     subplot(3, 2, 2*i - 1);
@@ -553,8 +556,8 @@ for i = 1:length(noise_variances)
     rx_hs = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
     rx_srrc = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
     
-    mf_hs = conv(rx_hs, flip(y), 'same');
-    mf_srrc = conv(rx_srrc, flip(s), 'same');
+    mf_hs = conv(rx_hs, y, 'same'); % Matched filter convulution must stay centered, so we use same
+    mf_srrc = conv(rx_srrc, s, 'same');
     
     % 2. Plot Matched Filter Eye - Half-Sine (Left Column)
     subplot(3, 2, 2*i - 1);
@@ -629,8 +632,8 @@ figQ11_Eyes = figure('Name', 'Q11: ZF Equalized Eye Diagrams', 'Position', [100,
 num_vars = length(noise_variances); 
 
 % PRE-COMPUTE: Noise-free channel outputs (10-bit stream) that don't change across noises
-q11_hs_channel_out = conv(modulated_half_sine, h_vector, 'same');
-q11_srrc_channel_out = conv(modulated_srrc, h_vector, 'same');
+q11_hs_channel_out = conv(modulated_half_sine, h_vector, 'full');
+q11_srrc_channel_out = conv(modulated_srrc, h_vector, 'full');
 
 for i = 1:num_vars
     sig_pwr = noise_variances(i);
@@ -644,8 +647,8 @@ for i = 1:num_vars
     rx_srrc_noisy = channel_output_eye_srrc + n_srrc;
     
     % noisy signals through the Matched Filter 
-    mf_out_hs = conv(rx_hs_noisy, flip(y));
-    mf_out_srrc = conv(rx_srrc_noisy, flip(s));
+    mf_out_hs = conv(rx_hs_noisy, y, 'same');
+    mf_out_srrc = conv(rx_srrc_noisy, s, 'same');
     
     % Pass through the Zero-Forcing Equalizer using filter()
     zf_out_hs = filter(b_zf, a_zf, mf_out_hs);
@@ -892,32 +895,30 @@ for n = 1:length(noise_vars_final)
     
     for p = 1:2
         pulse_name = pulse_types{p};
-        if p == 1
+        if p == 1 %HS
             current_pulse = y;
-            offset = 16; % Peak of Half-Sine = (sps/2 + 1)
-        else
+            offset = 17; % Peak of Half-Sine = (sps/2 + 1)
+
+        else %SRRC
             current_pulse = s;
             offset = 193; % Peak of SRRC = k*sps + 1
-            %offset = 386;
         end
-        
-        % Modulation of the entire image bit stream
-
+        % Modulation of the entire imag bit stream
         %Sampling Starts here for the full image data
         %Binary data bits ready for modulation
         tx_symbols = (2 * binary_data(:) - 1);
         upsampled_tx = upsample(tx_symbols, sps);
         %fill 0's 
-        tx_signal = conv(upsampled_tx, current_pulse, 'same');
+        tx_signal = conv(upsampled_tx, current_pulse, 'full');
         %convolute based on the pulse shape
         
         % Pass through Channel
-        channel_out = conv(tx_signal, h_upsampled, 'same');
+        channel_out = conv(tx_signal, h_upsampled, 'full');
         % channel_out = filter(h_upsampled, 1, tx_signal);
         
         % Receiver: Add Noise (Consistent for both equalizers in this pulse/noise block)
+
         rx_noisy = channel_out + (std_dev * randn(size(channel_out)));
-        
         for e = 1:2
             eq_name = equalizer_types{e};
             
@@ -944,14 +945,36 @@ for n = 1:length(noise_vars_final)
             
             if length(detected_bits) > numel(binary_data)
                 detected_bits = detected_bits(1:numel(binary_data));
+            elseif length(detected_bits) < numel(binary_data)
+                detected_bits = [detected_bits; zeros(numel(binary_data) - length(detected_bits), 1)];
             end
+            
+            % Reconstruct the image
+            recovered_img = postprocess_image(detected_bits, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max, N);
+            
+            % Plotting in the grid
+            figure(fig_all);
+            subplot(4, 4, plot_idx);
+            imshow(recovered_img);
+            title(sprintf('%s+%s, \\sigma^2=%.3f', pulse_name, eq_name, sig_pwr), 'FontSize', 9);
+            
+            % Calculate BER
+            errors = sum(binary_data(:) ~= detected_bits);
+            ber = errors / length(binary_data);
+            fprintf('BER [%s + %s, n=%.3f]: %.4e\n', pulse_name, eq_name, sig_pwr, ber);
+            
+            plot_idx = plot_idx + 1;
             
         end
     end
 end
+
+
 % Save the final grid
 exportgraphics(fig_all, 'imgs/Q14/Final_Result.jpg', 'Resolution', 300);
 fprintf('Full simulation complete. Results saved to imgs/Q14/Final_Result.jpg\n');
+
+
 
 %% Q15: Critical SNR Threshold Discovery
 fprintf('\n--- Running Q15: SNR Threshold Analysis ---\n');
@@ -965,8 +988,8 @@ pulse_q15 = s;
 tx_bits_q15 = binary_data(1:10000); % Test on a subset for speed
 tx_symbols_q15 = 2 * tx_bits_q15 - 1;
 upsampled_tx_q15 = upsample(tx_symbols_q15, sps);
-tx_sig_q15 = conv(upsampled_tx_q15, pulse_q15, 'same');
-chan_out_q15 = conv(tx_sig_q15, h_vector, 'same');
+tx_sig_q15 = conv(upsampled_tx_q15, pulse_q15, 'full');
+chan_out_q15 = conv(tx_sig_q15, h_vector, 'full');
 
 for i = 1:length(snr_db_range)
     sig_pwr = noise_vars_q15(i);
@@ -1019,12 +1042,13 @@ for c = 1:2
     % Test transmission with SRRC
     sig_pwr_q21 = 0.005;
     
-    % Reuse the long transmit signal from Q14 if available, or regenerate
     tx_symbols = 2 * binary_data(:) - 1; % A is a factor to increase power and decrease error
     upsampled_tx = upsample(tx_symbols, sps);
-    tx_signal = conv(upsampled_tx, s, 'same');
+    tx_signal = conv(upsampled_tx, s, 'full');
     
-    rx_q21 = conv(tx_signal, h_vec_new, 'same') + sqrt(sig_pwr_q21) * randn(size(tx_signal));
+    channel_out_q21 = conv(tx_signal, h_vec_new, 'same')
+
+    rx_q21 = channel_out_q21 + (sqrt(sig_pwr_q21) * randn(size(channel_out_q21)));
     
     % MMSE Equalization
     Q_f_new = conj(H_f_new) ./ (abs(H_f_new).^2 + sig_pwr_q21 + eps);
