@@ -298,25 +298,56 @@ Ideally, the output of the image data reflects the half-pulse used in conjuction
 
 We expected that the error performance is roughly the same between the two pulses. Since both pulses have the same energy, they should have the same SNR at the receiver for the same noise power. However, we would still expect differences in ISI and filtering between the two. The SRRC pulse is designed so that, after matched filtering, the response behaves like a raised cosine pulse, which reduces ISI at the sampling points. The half-sine pulse is not designed to satisfy the Nyquist zero-ISI condition after the matched filter, so we would expect the SRRC to have better error performance.
 
-We used the images that were produced for Q14. At a σ^2 of 0.005 (with all other variables kept constant) and looking at the ZF equlizer results, we can see that the half sine pulse does much better. The body outline is distinct and some details on the jersey (like the number) are somewhat visible. Even though both pulses have the same energy, the half sine is more robust to noise.
+We used the images that were produced for Q14. At a σ^2 of 0.005 (with all other variables kept constant) and looking at the MMSE equlizer results, we can see that the SRRC pulse does much better. The images are very similar but there is just slightly less noise in the SRRC output. Even though both pulses have the same energy, the SRRC is more robust to noise.
 
 #### Q19: Bandwidth and Pulse Length
 
 From the frequency response plots in question 1 and the modulated signal spectra in question 3, we can see that the half sine pulse has a higher bandiwth with many sidelobes being far beyond the main lobe. The SRRC pulse, however, has its sidelobes closer to the main lobe and has a smaller bandwidth. The half sine pulse only happens for one period so since its short in the time domain, its extends a lot in the frequency domain. The SRRC is wider in time and more compact in the frequency domain due to it spanning more time intervals of each transmitted symbol. The SRRC is more bandwidth efficient because of the smaller bandiwdth and because it reduces the components that are out of the frequency range we are looking at. This is good since the bandwidth is limited in our case. But, the longer duration of the SRRC causes more symbol overlap which could lead to  higher ISI.
 
-
-
 #### Q20: Conclusion on Pulse Shaping
-
-
-
+Overall, as expected, given what we learned in class, the SRRC outperforms the half sine pulse in image reconstruction, although it's pretty close. The SRRC + MMSE gave the best results. The main drawbacks of the SRRC (as discussed in question 19) is that it is longer in time. The SRRC pulse spans across many bit durations so it causes more pulse overlap at the transmitter and makes sampling more sensitive. It is also nore complex to implement than the half-sine. But, the SRRC gives better bandwidth control and is more robust to noise (emphasesized by our results). 
 
 #### Q21: Performance Under New Channels
+The communication system did not work seamlessly when we plugged in the new channels. The image is barely recognizable for both channels but some information is still there. There is a lot of noise in both images and visible reconstruction errors.
 
-We tested the system under two additional wireless channel models:
-1.  **Outdoor Channel ($h_1$):** Characterized by long delays (up to 25 bits), representing reflections from distant buildings. This channel has a higher total **power gain** ($\sum |h[n]|^2 \approx 1.745$), but the severe delay spread makes equalization significantly more challenging.
+The indoor channel performed slightly better than the outdoor channel. In the indoor channel output, the face and body outlines are more defined and you can tell that the shirt the person is wearing is a jersey. This makes snese since the outdorr channel has logner delayed echoes which causes more ISI and makes equalization harder. 
+
+The power gain of a channel is the energy of its impulse response:
+
+$$
+\|h\|^2 = \sum_{n} |h[n]|^2
+$$
+
+### Outdoor Channel
+
+$$
+\|h_1\|^2 = 0.5^2 + 1^2 + 0.63^2 + 0.25^2 + 0.16^2 + 0.1^2
+$$
+
+$$
+= 0.25 + 1 + 0.3969 + 0.0625 + 0.0256 + 0.01
+$$
+
+$$
+= 1.745
+$$
+
+### Indoor Channel
+
+$$
+\|h_2\|^2 = 1^2 + 0.4365^2 + 0.1905^2 + 0.0832^2 + 0.0158^2 + 0.003^2
+$$
+
+$$
+= 1 + 0.19053225 + 0.03629025 + 0.00692224 + 0.00024964 + 0.000009
+$$
+
+$$
+\approx 1.234
+$$
+
+The outdoor channel has a higher power gain. However, the autdoor channel has worse image quality because its energy is spread across longer delays which creates more ISI, while the indoor channel's energy is concetrated around the concise delays so the recovered image is better.
+
 ![](./imgs/Q21/Recovered_Outdoor.jpg)
 
-
-2.  **Indoor Channel ($h_2$):** Characterized by shorter, rapidly decaying echoes. While it has a lower power gain ($\approx 1.234$), its performance is generally better because the ISI is "short-lived" and more easily corrected by the MMSE equalizer.
 ![](./imgs/Q21/Recovered_Indoor.jpg)
