@@ -48,7 +48,7 @@
 
 
 
-# EE107 Mid-Report
+# EE107 Final Report
 
 ## Authors: Jacob Gerson, Asher Milberg, Mason Doshi
 
@@ -67,10 +67,11 @@ Our group wanted to use this image for our project.
 Here are the time-domain plots
 
 **Half Sine Wave:**
-![](./imgs/Q1/Q1_thalfsine.jpg)
+![](./imgs/Q1/Q1_tsrrc.jpg)
 
 **SRRC Wave:** 
-![](./imgs/Q1/Q1_tsrrc.jpg)
+![](./imgs/Q1/Q1_tk3.jpg)
+
 
 And the frequency domain dB plots:
 
@@ -332,6 +333,8 @@ $$
 = 1.745
 $$
 
+![](./imgs/Q21/Recovered_Outdoor.jpg)
+
 ### Indoor Channel
 
 $$
@@ -346,8 +349,7 @@ $$
 \approx 1.234
 $$
 
+![](./imgs/Q21/Recovered_Indoor.jpg)
+
 The outdoor channel has a higher power gain. However, the autdoor channel has worse image quality because its energy is spread across longer delays which creates more ISI, while the indoor channel's energy is concetrated around the concise delays so the recovered image is better.
 
-![](./imgs/Q21/Recovered_Outdoor.jpg)
-
-![](./imgs/Q21/Recovered_Indoor.jpg)
