@@ -75,9 +75,9 @@ Here are the time-domain plots
 
 And the frequency domain dB plots:
 
-![](./imgs/Q1/Q1_fhalfsine.jpg)
-
 ![](./imgs/Q1/Q1_fsrrc.jpg)
+
+![](./imgs/Q 1/Q1_fa0,1.jpg)
 
 The half-sine frequency response uses more bandwidth that the SRRC pulse. The SRRC response has a flat response until ~ 0.5 Hz (which is shown by our rolloff factor alpha), and then drops off. 
 
@@ -266,8 +266,11 @@ Overall, MMSE equalizer has a clearer and much better performance as the noise l
 
 Half Sine: The critical SNR threshold is the point where the Bit Error Rate (BER) becomes high enough to visibly degrade the reconstructed image is when the noise variance = 0.005 . Since we have normalized the power of the signal to be 1, the SNR = Psig/Pnoise = 1/0.005. In dB this equates to 23dB.
 
-
 SRRC: The critical SNR threshold is the point where the Bit Error Rate (BER) becomes high enough to visibly degrade the reconstructed image is when the noise variance = 0.05 . Since we have normalized the power of the signal to be 1, the SNR = Psig/Pnoise = 1/0.05. In dB this equates to 13dB.
+
+Here is the BER vs SNR graph for the ZF and MMSE equalizers:
+
+![](./imgs/Q15/Q15_BER_Curves.jpg)
 
 #### Q16: Performance on Different Images
 
