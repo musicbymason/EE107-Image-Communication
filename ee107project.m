@@ -518,7 +518,7 @@ for i = 1:length(noise_variances)
     % plotting half sine matched filter eye (left column)
     subplot(3, 2, 2*i - 1);
     start_hs = offset_half_sine + half_symbol;
-    % Reshape into segments ofq*sps to show q-bit duration
+    % reshaping into segments ofq*sps to show q-bit duration
     eye_hs = reshape(mf_hs(start_hs : start_hs + (sps*40)-1), sps, []);
     plot(eye_hs, 'b');
     title(sprintf('MF Eye: Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
@@ -562,7 +562,7 @@ for i = 1:length(noise_variances)
     title(sprintf('MF Eye: Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
     grid on; ylabel('Amplitude');
     
-    % 3. Plot Matched Filter Eye - SRRC (Right Column)
+    % plotting SRRC matched filter eye (right column)
     subplot(3, 2, 2*i);
     start_srrc = offset_srrc + half_symbol;
     eye_srrc = reshape(mf_srrc(start_srrc : start_srrc + (sps*2*40)-1), sps*2, []);
@@ -587,7 +587,7 @@ b_zf = 1;
 a_zf = h_upsampled;
 
 % Impulse Response for plotting
-% Apply the filter to a unit impulse delta[n]
+% Applying the filter to a unit impulse delta[n]
 impulse = [1; zeros(10000, 1)]; % Use ~10,000 samples for the IIR tail 
 q_zf_n = filter(b_zf, a_zf, impulse);
 
@@ -613,7 +613,7 @@ ylabel('Amplitude');
 % exportgraphics(figQ10, 'imgs/Q10/Q10.jpg', 'Resolution', 300);
 
 %Q11:
-%Eye diagram for both pulse shapes after ZF equalization with no noise, with medium noise, and with heavy noise.
+%Eye diagram for both pulse shapes after ZF equalization with no noise, with medium noise, and with heavy noise
 noise_labels = {'No Noise', 'Little Noise', 'Heavy Noise'};
 
 figure_zf_10bit = figure('Name', 'Q11: ZF Time-Domain Output (10-bit stream)', 'Position', [150, 150, 800, 1000]); 
@@ -629,7 +629,7 @@ for i = 1:num_vars
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
 
-    %noisy channel outputs (Eye Diagram stream)
+    %noisy channel outputs (eye diagram stream)
     n_hs = std_dev * randn(size(channel_output_eye_half_sine));
     n_srrc = std_dev * randn(size(channel_output_eye_srrc));
     
@@ -640,7 +640,7 @@ for i = 1:num_vars
     mf_out_hs = conv(rx_hs_noisy, y, 'same');
     mf_out_srrc = conv(rx_srrc_noisy, s, 'same');
     
-    % Pass through the Zero-Forcing Equalizer using filter()
+    % passing through the Zero-Forcing Equalizer using filter()
     zf_out_hs = filter(b_zf, a_zf, mf_out_hs);
     zf_out_srrc = filter(b_zf, a_zf, mf_out_srrc);
     
@@ -664,10 +664,10 @@ for i = 1:num_vars
     grid on;
     ylim([-1.5 1.5]);
     
-    % Switch back to the 10-bit figure so we don't draw on the eye diagrams
+    % switching back to the 10-bit figure so we don't draw on the eye diagrams
     figure(figure_zf_10bit); 
     
-    % Generate noise for the 10-bit stream and add to PRE-COMPUTED channel output
+    % generating noise for the 10-bit stream and adding to precomputed channel output
     n_hs_10bit = std_dev * randn(size(q11_hs_channel_out));
     n_srrc_10bit = std_dev * randn(size(q11_srrc_channel_out));
     
@@ -680,15 +680,15 @@ for i = 1:num_vars
     zf_out_hs_10bit = filter(b_zf, a_zf, mf_out_hs_10bit);
     zf_out_srrc_10bit = filter(b_zf, a_zf, mf_out_srrc_10bit);
 
-    % Draw the subplots on the active figure_zf_10bit window
+    % drawing the subplots on the active figure_zf_10bit window
 
     subplot(num_vars, 1, i);
 
-% Create dedicated time vectors for both signals
+% creating dedicated time vectors for both signals
     t_zf_hs = (0:length(zf_out_hs_10bit)-1) / sps;
     t_zf_srrc = (0:length(zf_out_srrc_10bit)-1) / sps;
 
-    % Plot using the matching time vectors
+    % plotting using the matching time vectors
     plot(t_zf_hs - 0.5, zf_out_hs_10bit, 'b', 'LineWidth', 1.2); hold on;
     plot(t_zf_srrc - k, zf_out_srrc_10bit, 'r--', 'LineWidth', 1.2);
     
@@ -703,7 +703,7 @@ for i = 1:num_vars
 end
 exportgraphics(figure_zf_10bit, 'imgs/Q11/ZF_time_10bit.jpg', 'Resolution', 300);
 
-% Format and Export the unified Eye Diagram figure for Q11
+% formatting and exporting the unified Eye Diagram figure for Q11
 figure(figQ11_Eyes);
 subplot(num_vars, 2, num_vars*2 - 1); xlabel('Samples (2 Symbol Periods)');
 subplot(num_vars, 2, num_vars*2); xlabel('Samples (2 Symbol Periods)');
@@ -726,14 +726,14 @@ for i = 1:length(noise_variances)
     Q_f = conj(H_f) ./ (abs(H_f).^2 + sig_pwr);
     q_t = ifft(Q_f);
     
-    % 2. Plot Impulse Response (Left Column)
+    % plotting impulse response (left column)
     subplot(3, 2, 2*i - 1);
     stem(real(q_t(1:sps*2)), 'filled', 'MarkerSize', 3);
     title(sprintf('MMSE Impulse Response (\\sigma^2 = %.3f)', sig_pwr));
     grid on; ylabel('Amplitude');
     if i == 3, xlabel('n (samples)'); end
     
-    % 3. Plot Frequency Response (Right Column)
+    % plotting frequency response (right column)
     subplot(3, 2, 2*i);
     plot(f_axis(1:N_fft/2), 20*log10(abs(Q_f(1:N_fft/2))));
     
@@ -746,16 +746,15 @@ end
 exportgraphics(gcf, 'imgs/Q12/MMSE_freq.jpg', 'Resolution', 300);
 
 %Q13 - Eye diagrams for both pulse shapes after MMSE equalization with no noise, with medium noise, and with heavy noise.
-% Setup figures BEFORE the loop
+% Setup figures before the loop
 
 figTime_MMSE_10bit = figure('Name', 'Q13: MMSE Time-Domain (10-bit stream)', 'Position', [200, 200, 800, 1000]);
 figQ13 = figure('Name', 'Q13: MMSE Equalized Eye Diagrams', 'Position', [100, 100, 1000, 1200]);
 half_symbol = sps / 2;
 
-% track noise variances there are to prevent subplot crashing
+% tracking noise variances there are to prevent subplot crashing
 num_vars = length(noise_variances); 
 
-% (Assuming modulated_half_sine and modulated_srrc are 10-bit streams)
 q13_hs_channel_out = conv(modulated_half_sine, h_vector, 'full');
 q13_srrc_channel_out = conv(modulated_srrc, h_vector, 'full');
 
@@ -776,7 +775,7 @@ for i = 1:num_vars
     rx_hs_eye = channel_output_eye_half_sine + n_hs_eye;
     rx_srrc_eye = channel_output_eye_srrc + n_srrc_eye;
     
-    % Convolve directly with q_t since it already contains the matched filter.
+    % Convolving directly with q_t since it already contains the matched filter
     mmse_out_hs_eye = conv(rx_hs_eye, q_t, 'same');
     mmse_out_srrc_eye = conv(rx_srrc_eye, q_t, 'same');
 
@@ -795,15 +794,15 @@ for i = 1:num_vars
     figure(figTime_MMSE_10bit);
     subplot(num_vars, 1, i);
     
-    % Create dedicated time vectors for both signals to avoid size mismatch
+    % creating time vectors for both signals to avoid size mismatch
     t_mmse_hs = (0:length(mmse_out_hs_10bit)-1) / sps;
     t_mmse_srrc = (0:length(mmse_out_srrc_10bit)-1) / sps;
 
-    % Plot using matching time vectors and compensating for group delay
+    % plotting using matching time vectors and compensating for group delay
     plot(t_mmse_hs - 0.5, mmse_out_hs_10bit, 'b', 'LineWidth', 1.2); hold on;
     plot(t_mmse_srrc - k, mmse_out_srrc_10bit, 'r--', 'LineWidth', 1.2);
 
-    % Plot the original bits as reference markers (sampling the upsampled sequence)
+    % plotting the original bits as reference markers (sampling the upsampled sequence)
     original_bits = unsampled_symbols(1:sps:end); 
     stem(0:length(original_bits)-1, original_bits, 'k', 'LineWidth', 1, 'Marker', 'x');
 
@@ -819,7 +818,7 @@ for i = 1:num_vars
     subplot(num_vars, 2, 2*i - 1);
     start_hs = offset_half_sine + half_symbol;
     
-    %  reshape to 2*sps (two full symbols wide)
+    %  reshaping to 2*sps (two full symbols wide)
     slice_len = 20 * sps; 
     eye_hs_mmse = reshape(mmse_out_hs_eye(start_hs : start_hs + slice_len - 1), 2*sps, []);
     plot(eye_hs_mmse, 'b');
@@ -862,7 +861,7 @@ if ~exist('imgs/Q14', 'dir'), mkdir('imgs/Q14'); end
 fig_all = figure('Name', 'Q14: Full Simulation Results', 'Position', [50, 50, 1600, 1200]);
 plot_idx = 1;
 
-% Pre-calculate H_f once for the channel
+% precalculating H_f once for the channel
 N_fft_eq = 1024;
 H_f_eq = fft(h_vector, N_fft_eq);
 
@@ -881,19 +880,19 @@ for n = 1:length(noise_vars_final)
             offset = 193; % Peak of SRRC = k*sps + 1
         end
         % Modulation of the entire imag bit stream
-        %Sampling Starts here for the full image data
-        %Binary data bits ready for modulation
+        % Sampling Starts here for the full image data
+        % Binary data bits ready for modulation
         tx_symbols = (2 * binary_data(:) - 1);
         upsampled_tx = upsample(tx_symbols, sps);
         %fill 0's 
         tx_signal = conv(upsampled_tx, current_pulse, 'full');
-        %convolute based on the pulse shape
+        % convolving based on the pulse shape
         
-        % Pass through Channel
+        % passing through through the channel
         channel_out = conv(tx_signal, h_upsampled, 'full');
         % channel_out = filter(h_upsampled, 1, tx_signal);
         
-        % Receiver: Add Noise (Consistent for both equalizers in this pulse/noise block)
+        % Receiver: adding noise
 
         rx_noisy = channel_out + (std_dev * randn(size(channel_out)));
         for e = 1:2
@@ -901,7 +900,7 @@ for n = 1:length(noise_vars_final)
             
             if e == 1 % ZF
                 % Matched Filter the NOISY received signal
-                mf_out = conv(rx_noisy, current_pulse, 'same'); %matched filter convolution uses same to keep aligned. Please don't change any of this working code
+                mf_out = conv(rx_noisy, current_pulse, 'same'); %matched filter convolution uses same to keep aligned.
                 % Equalize
                 equalized_out = filter(1, h_upsampled, mf_out);
             else % MMSE
@@ -913,10 +912,10 @@ for n = 1:length(noise_vars_final)
                 equalized_out = conv(mf_out, q_t, 'same');
             end
             
-            % Sample the final equalized signal
+            % sampling the final equalized signal
             sample_indices = (offset : sps : length(equalized_out));
             
-            % Perform detection
+            % performing detection
             detected_bits = double(equalized_out(sample_indices) > 0);
             detected_bits = detected_bits(:); 
             
@@ -926,7 +925,7 @@ for n = 1:length(noise_vars_final)
                 detected_bits = [detected_bits; zeros(numel(binary_data) - length(detected_bits), 1)];
             end
             
-            % Reconstruct the image
+            % reconstructing the image
             recovered_img = postprocess_image(detected_bits, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max, N);
             
             % Plotting in the grid
@@ -935,7 +934,7 @@ for n = 1:length(noise_vars_final)
             imshow(recovered_img);
             title(sprintf('%s+%s, \\sigma^2=%.3f', pulse_name, eq_name, sig_pwr), 'FontSize', 9);
             
-            % Calculate BER
+            % BER calculations
             errors = sum(binary_data(:) ~= detected_bits);
             ber = errors / length(binary_data);
             fprintf('BER [%s + %s, n=%.3f]: %.4e\n', pulse_name, eq_name, sig_pwr, ber);
@@ -957,13 +956,13 @@ noise_vars_q15 = 10.^((-1 .* snr_db_range) ./ 10);
 ber_zf = zeros(size(snr_db_range));
 ber_mmse = zeros(size(snr_db_range));
 
-% Use SRRC for this test
+% using SRRC for this test
 pulse_q15 = s; 
-tx_bits_q15 = binary_data(1:10000); % Test on a subset for speed
+tx_bits_q15 = binary_data(1:10000); % testing on a subset for speed
 tx_symbols_q15 = 2 .* tx_bits_q15 - 1;
 upsampled_tx_q15 = upsample(tx_symbols_q15, sps);
 tx_sig_q15 = conv(upsampled_tx_q15, pulse_q15, 'full');
-chan_out_q15 = conv(tx_sig_q15, h_vector, 'full');
+chan_out_q15 = conv(tx_sig_q15, h_unsampled, 'full');
 
 for i = 1:length(snr_db_range)
     sig_pwr = noise_vars_q15(i);
@@ -978,7 +977,7 @@ for i = 1:length(snr_db_range)
     % MMSE
     Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
     q_t = fftshift(real(ifft(Q_f)));
-    eq_mmse = conv(mf_zf, q_t, 'same');
+    eq_mmse = conv(m, q_t, 'same');
     det_mmse = double(eq_mmse(1:sps:end) > 0);
     ber_mmse(i) = sum(tx_bits_q15(:) ~= det_mmse(1:length(tx_bits_q15))) / length(tx_bits_q15);
 end
@@ -1042,5 +1041,4 @@ for c = 1:2
     power_gain = sum(abs(h_taps_new).^2);
     fprintf('%s Channel Power Gain: %.4f\n', chan_names{c}, power_gain);
 end
-close all; % Close all figures to free up memory
-
+close all;
