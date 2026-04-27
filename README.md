@@ -175,7 +175,7 @@ The addition of Gaussian noise introduces random vertical displacement to the si
 
 The impulse and frequency reeponses in Q1 show the ideal pulse shapes and their spectrums. 
 
-The below Q8 plots are the matched filter output. Comparing against the ideal signal plots from Q1, the signals are noisy and barely resemble the original pulses. The frequency response graphs are also noisy and have some fluctuations due to the channel ISI and the additive random noise. However, the spectral shape is still a lowpass and the SRRC signal is still bandlimited than the half since, so we know that the right data is being sent through, albeit with many deviations. 
+The above Q8 plots are the matched filter output. Comparing against the ideal signal plots from Q1, the signals are noisy and barely resemble the original pulses. The frequency response graphs are also noisy and have some fluctuations due to the channel ISI and the additive random noise. However, the spectral shape is still a lowpass and the SRRC signal is still bandlimited than the half since, so we know that the right data is being sent through, albeit with many deviations. 
 
 #### Q9: Matched Filter Output - Eye Diagrams for 1 & 2 Bit Durations
 
@@ -188,6 +188,8 @@ The below Q8 plots are the matched filter output. Comparing against the ideal si
 
 For the half sine, we want to sample at 0.5 seconds which is where the eye opens the most.
 For the SRRC we want to sample at 0.3 seconds which is where the eye opens the most.
+
+With set bit periods of 1 second, these time markers also represent the percent of the total taken samples where the ideal sampling point would lie.  
 
 #### Q10: The Zero-Forcing (ZF) Equalizer
 

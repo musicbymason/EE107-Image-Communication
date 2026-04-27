@@ -246,7 +246,7 @@ function [upsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_mod
 end 
 
 % 2/2.3 - Processing Selected Image, Turning into Binary Bit Stream
-image_path = 'imgs/lamar.jpg';
+image_path = 'imgs/macjones.jpg';
 N = 14400; % Determined blocks to send - total number of blocks
 
 % Headless mode: Generate and export graphics without opening windows
@@ -769,8 +769,8 @@ num_vars = length(noise_variances);
 
 % PRE-COMPUTE: Noise-free channel outputs 
 % (Assuming modulated_half_sine and modulated_srrc are 10-bit streams)
-q13_hs_channel_out = conv(modulated_half_sine, h_vector, 'same');
-q13_srrc_channel_out = conv(modulated_srrc, h_vector, 'same');
+q13_hs_channel_out = conv(modulated_half_sine, h_vector, 'full');
+q13_srrc_channel_out = conv(modulated_srrc, h_vector, 'full');
 
 for i = 1:num_vars
     sig_pwr = noise_variances(i);
@@ -864,10 +864,10 @@ subplot(num_vars, 2, num_vars*2); xlabel('Samples (2 Symbol Periods)');
 % Optional: Ensure directories exist before exporting
 if ~exist('imgs/Q13', 'dir'), mkdir('imgs/Q13'); end
 
-%exportgraphics(figQ13, 'imgs/Q13/MMSE_eye.jpg', 'Resolution', 300);
+exportgraphics(figQ13, 'imgs/Q13/MMSE_eye.jpg', 'Resolution', 300);
 
 figure(figTime_MMSE_10bit);
-%exportgraphics(figTime_MMSE_10bit, 'imgs/Q13/MMSE_time_10bit.jpg', 'Resolution', 300);
+exportgraphics(figTime_MMSE_10bit, 'imgs/Q13/MMSE_time_10bit.jpg', 'Resolution', 300);
 
 
 close all;
@@ -1044,7 +1044,7 @@ for c = 1:2
     
     tx_symbols = 2 * binary_data(:) - 1; % A is a factor to increase power and decrease error
     upsampled_tx = upsample(tx_symbols, sps);
-    tx_signal = conv(upsampled_tx, s, 'full');
+    tx_signal = conv(upsampled_tx, s, 'same');
     
     channel_out_q21 = conv(tx_signal, h_vec_new, 'same')
 
