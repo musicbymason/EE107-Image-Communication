@@ -36,10 +36,10 @@ function [binary_data, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, D
    binary_data = int2bit(double(DCT_vector), 8);
 
    % Reshape to separate the bits from the coefficients
-   % This creates a [8 bits x 64 coeffs x N blocks] array
+   % creates a [8 bits x 64 coeffs x N blocks] array
    reshaped_array = reshape(binary_data, 8, 64, []);
    % Permute to swap the first two dimensions
-   % This moves the 64 coeffs to rows and 8 bits to columns
+   % moves the 64 coeffs to rows and 8 bits to columns
    % Resulting size: [64 x 8 x N]
    binary_3D = permute(reshaped_array, [2, 1, 3]);
 end
@@ -49,7 +49,6 @@ function [reconstructed_image] = postprocess_image(received_bits, image_dimensio
     
     received_integers = bit2int(received_bits, 8);
     
-    % FIX: Compute actual number of blocks from the received data
     % Each block has 64 coefficients, each coefficient is 1 integer
     num_blocks = length(received_integers) / 64;
     
@@ -106,7 +105,7 @@ Y = Y(1:Nfft/2 + 1);                         % one-sided spectrum
 mag_dB = 20*log10(abs(Y) / max(abs(Y)) + eps);  % normalize to 0 dB
 phase = unwrap(angle(Y));                    % unrestrict period
 
-f = linspace(0, 1, Nfft/2 + 1);              % normalized frequency (0 → π)
+f = linspace(0, 1, Nfft/2 + 1);              % normalized frequency (0 to pi)
 
 figure;
 subplot(2,1,1)
@@ -148,7 +147,7 @@ function [s] = srrc_pulse(alpha, k, sps)
     mag_dB = 20*log10(abs(S) / max(abs(S)) + eps);  % normalize to 0 dB
     phase = unwrap(angle(S));                    % unrestrict period
 
-    f = linspace(0, 1, Nfft/2 + 1);              % normalized frequency (0 → π)
+    f = linspace(0, 1, Nfft/2 + 1);              % normalized frequency (0 to pi)
 
     figure;
     subplot(2,1,1)
@@ -173,15 +172,14 @@ function [upsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_mod
    num_bits = 10;
    bits = randi([0 1], 1, num_bits);
    % Map bits to PAM symbols: '1' becomes +1, '0' becomes -1
-   % This makes the zero-threshold detection later much easier
    symbols = 2*bits - 1;
-   % Upsample the symbols to match the sampling rate (insert 31 zeros between symbols)
+   % upscales symbols to match the sampling rate (insert 31 zeros between symbols)
    upsampled_symbols = upsample(symbols, sps);
 
    modulated_half_sine = conv(upsampled_symbols, y, 'full');
    modulated_srrc = conv(upsampled_symbols, s, 'full');
 
-   %modulate the unsampled symbols by doing a convolution "conv" between the unsampled symbols and the pulses (half sine, SRRC) in the time domain. 
+   %modulate the unsampled symbols by doing a convolution between the unsampled symbols and the pulses (half sine, SRRC) in the time domain. 
    % Time axes for the modulated signals
    % We divide by sps so the x-axis represents bit durations (T=1)
    t_mod_half_sine = (0:length(modulated_half_sine)-1) / sps;
@@ -504,7 +502,7 @@ end
 subplot(3,2,5); xlabel('Samples');
 subplot(3,2,6); xlabel('Frequency (normalized)');
 
-% exportgraphics(figQ8, 'imgs/Q8/matched.jpg', 'Resolution', 300);
+exportgraphics(figQ8, 'imgs/Q8/matched.jpg', 'Resolution', 300);
 
 %------------------ QUESTION 9: Matched Filter Eye Diagrams ------------------
 figQ9_1B = figure('Name', 'Q9: Matched Filter Eye Diagrams - 1-Bit', 'Position', [100, 100, 1000, 1200]);
@@ -543,7 +541,7 @@ end
 subplot(3,2,5); xlabel('Samples (1-Bit Duration)');
 subplot(3,2,6); xlabel('Samples (1-Bit Duration)');
 
-% exportgraphics(figQ9_1B, 'imgs/Q9/Matched_Filter_Eyes_1bit.jpg', 'Resolution', 300);
+exportgraphics(figQ9_1B, 'imgs/Q9/Matched_Filter_Eyes_1bit.jpg', 'Resolution', 300);
 
 figQ9_2B = figure('Name', 'Q9: Matched Filter Eye Diagrams - 2-Bit', 'Position', [100, 100, 1000, 1200]);
 half_symbol = sps / 2;
@@ -634,8 +632,8 @@ q11_srrc_channel_out = conv(modulated_srrc, h_vector, 'full');
 for i = 1:num_vars
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
-    
-    % 1. Re-generate noisy channel outputs (Eye Diagram stream)
+
+    %noisy channel outputs (Eye Diagram stream)
     n_hs = std_dev * randn(size(channel_output_eye_half_sine));
     n_srrc = std_dev * randn(size(channel_output_eye_srrc));
     
@@ -698,8 +696,6 @@ for i = 1:num_vars
     plot(t_zf_hs - 0.5, zf_out_hs_10bit, 'b', 'LineWidth', 1.2); hold on;
     plot(t_zf_srrc - k, zf_out_srrc_10bit, 'r--', 'LineWidth', 1.2);
     
-    % FIX: Assume unsampled_symbols is already 1 sample per bit. 
-    % (If it is zero-padded, revert this line to unsampled_symbols(1:sps:end))
     original_bits = unsampled_symbols(1:sps:end);
     stem(0:length(original_bits)-1, original_bits, 'k', 'LineWidth', 1, 'Marker', 'x');
 
@@ -763,7 +759,6 @@ half_symbol = sps / 2;
 % track noise variances there are to prevent subplot crashing
 num_vars = length(noise_variances); 
 
-% PRE-COMPUTE: Noise-free channel outputs 
 % (Assuming modulated_half_sine and modulated_srrc are 10-bit streams)
 q13_hs_channel_out = conv(modulated_half_sine, h_vector, 'full');
 q13_srrc_channel_out = conv(modulated_srrc, h_vector, 'full');
@@ -800,7 +795,7 @@ for i = 1:num_vars
     mmse_out_hs_10bit = conv(rx_hs_10bit, q_t, 'same');
     mmse_out_srrc_10bit = conv(rx_srrc_10bit, q_t, 'same');
 
-    % PLOT 1: TIME DOMAIN OUTPUTS (10-bit stream)
+    % (10-bit stream)
     figure(figTime_MMSE_10bit);
     subplot(num_vars, 1, i);
     
@@ -822,14 +817,13 @@ for i = 1:num_vars
     grid on; xlim([-1 11]); ylim([-1.5 1.5]);
     hold off;
     
-    % PLOT 2: EYE DIAGRAMS (1000-bit stream)
+    % EYE DIAGRAMS (1000-bit stream)
     figure(figQ13);
     
-    % FIX: Use dynamic subplot layout
     subplot(num_vars, 2, 2*i - 1);
     start_hs = offset_half_sine + half_symbol;
     
-    % FIX: Extract 20 symbols worth of samples and reshape to 2*sps (two full symbols wide)
+    %  reshape to 2*sps (two full symbols wide)
     slice_len = 20 * sps; 
     eye_hs_mmse = reshape(mmse_out_hs_eye(start_hs : start_hs + slice_len - 1), 2*sps, []);
     plot(eye_hs_mmse, 'b');
@@ -910,23 +904,23 @@ for n = 1:length(noise_vars_final)
             eq_name = equalizer_types{e};
             
             if e == 1 % ZF
-                % 1. Matched Filter the NOISY received signal
-                mf_out = conv(rx_noisy, current_pulse, 'same');
-                % 2. Equalize
+                % Matched Filter the NOISY received signal
+                mf_out = conv(rx_noisy, current_pulse, 'same'); %matched filter convolution uses same to keep aligned. Please don't change any of this working code
+                % Equalize
                 equalized_out = filter(1, h_upsampled, mf_out);
             else % MMSE
-                % 1. Matched Filter the NOISY received signal
+                %Matched Filter
                 mf_out = conv(rx_noisy, flip(current_pulse), 'same');
-                % 2. Equalize (Fixing the typo "qualized_out")
+                % Equalize 
                 Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
                 q_t = fftshift(real(ifft(Q_f)));
                 equalized_out = conv(mf_out, q_t, 'same');
             end
             
-            % 3. Sample the final equalized signal
+            % Sample the final equalized signal
             sample_indices = (offset : sps : length(equalized_out));
             
-            % 4. Perform detection
+            % Perform detection
             detected_bits = double(equalized_out(sample_indices) > 0);
             detected_bits = detected_bits(:); 
             
@@ -956,12 +950,9 @@ for n = 1:length(noise_vars_final)
     end
 end
 
-
-% Save the final grid
+% final grid
 exportgraphics(fig_all, 'imgs/Q16/Final_Result.jpg', 'Resolution', 300);
 fprintf('Full simulation complete. Results saved to imgs/Q14/Final_Result.jpg\n');
-
-
 
 %% Q15: Critical SNR Threshold Discovery
 fprintf('\n--- Running Q15: SNR Threshold Analysis ---\n');
@@ -1006,8 +997,8 @@ exportgraphics(figQ15, 'imgs/Q15/Q15_BER_Curves.jpg');
 %% Q16: Performance on Different Images
 % We already used macjones.jpg. 
 fprintf('\n--- Running Q16: Different Image Analysis ---\n');
-% This section is implicitly handled by the modularity of the code,
-% allowing the user to change 'image_path' at the top of the file.
+% handled by the modularity of the code,
+% change 'image_path' at the top of the file.
 
 %% Q21: Effect of New Channels
 fprintf('\n--- Running Q21: New Channel Analysis ---\n');
