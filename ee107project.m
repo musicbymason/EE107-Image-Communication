@@ -208,12 +208,12 @@ function [upsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_mod
    % Use zero-padded FFT size as before for smooth plots
    Nfft = 1024; 
 
-   % 1. FFT of the Modulated Half-sine Signal
+   %FFT of the Modulated half sine signal
    Mod_Half_Sine = fft(modulated_half_sine, Nfft);
    mag_mod_half_sine = 20*log10(abs(Mod_Half_Sine));
    mag_mod_half_sine = mag_mod_half_sine - max(mag_mod_half_sine); % Normalize peak to 0 dB
 
-   % 2. FFT of the Modulated SRRC Signal
+   % FFT of the modulated SRRC signal
    Mod_SRRC = fft(modulated_srrc, Nfft);
    mag_mod_srrc = 20*log10(abs(Mod_SRRC));
    mag_mod_srrc = mag_mod_srrc - max(mag_mod_srrc); % Normalize peak to 0 dB
@@ -223,7 +223,7 @@ function [upsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_mod
    half_idx = 1:Nfft/2;
 
    figure('Name', 'Q3: Modulated Signal Spectra', 'Position', [200, 200, 800, 600]);
-   % Half-Sine Modulated Signal Spectrum
+   % Half-Sine modulated signal spectrum
    subplot(2,1,1);
    plot(f_mod(half_idx), mag_mod_half_sine(half_idx), 'b', 'LineWidth', 1.5);
    title('Spectrum of Modulated Half-Sine Signal (10 Random Bits)', 'FontSize', 12, 'FontWeight', 'bold');
@@ -232,31 +232,28 @@ function [upsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_mod
    xlim([0 16]); % View up to Nyquist (sps/2)
    ylim([-60 5]);
 
-   % SRRC Modulated Signal Spectrum
+   % SRRC modulated signal spectrum
    subplot(2,1,2);
    plot(f_mod(half_idx), mag_mod_srrc(half_idx), 'r', 'LineWidth', 1.5);
    title('Spectrum of Modulated SRRC Signal (10 Random Bits)', 'FontSize', 12, 'FontWeight', 'bold');
    ylabel('Magnitude (dB)', 'FontSize', 11);
    xlabel('Frequency (Hz)', 'FontSize', 11);
    grid on;
-   xlim([0 2]); % Zoom in to see the sharp cutoff
+   xlim([0 2]); % zooming in to see the sharp cutoff
    ylim([-80 5]);
 end 
 
-% 2/2.3 - Processing Selected Image, Turning into Binary Bit Stream
-image_path = 'imgs/macjones.jpg';
-N = 14400; % Determined blocks to send - total number of blocks
+image_path = 'imgs/macjones.jpg'; % mac jones image
+N = 14400; % total number of blocks to send
 
-% Headless mode: Generate and export graphics without opening windows
 set(groot, 'DefaultFigureVisible', 'off');
 
-% Ensure all image directories exist
 q_dirs = {'imgs/Q1', 'imgs/Q2', 'imgs/Q3', 'imgs/Q4', 'imgs/Q5', 'imgs/Q6', 'imgs/Q7', 'imgs/Q8', 'imgs/Q9', 'imgs/Q10', 'imgs/Q11', 'imgs/Q12', 'imgs/Q13', 'imgs/Q14', 'imgs/Q15', 'imgs/Q16', 'imgs/Q21'};
 for i = 1:length(q_dirs)
     if ~exist(q_dirs{i}, 'dir'), mkdir(q_dirs{i}); end
 end
 
-% Save grayscale reference image
+% saving grayscale reference image
 ref_img = imread(image_path);
 if size(ref_img, 3) == 3
     ref_img = rgb2gray(ref_img);
@@ -266,7 +263,6 @@ imwrite(ref_img, 'imgs/Q14/Reference_Gray.jpg');
 %binary_3D is an N long array of 64 x 8 binary arrays which represent the DCT coefficients of each image block
 [binary_data, image_dimensions, scaled_DCT_dimensions, DCT_Image_min, DCT_Image_max] = preprocess_image(image_path, N); 
 
-% 2.4 - Modulation of both pulse shaping functions
 %---------------QUESTION 1 Design and Plot of Half Sine and SRRC Pulses--------
 %Half Sine
 sps = 32; % 32 Samples for both the half sine and SRRC 
@@ -363,7 +359,7 @@ figQ5 = figure('Name', 'Q5: Channel Responses', 'Position', [200, 200, 800, 600]
 
 %  Impulse Response
 subplot(2, 1, 1);
-% Plot the original taps against their index (0 to 3)
+% plotting the original taps against their index (0 to 3)
 stem(0:length(h_taps)-1, h_taps, 'filled', 'LineWidth', 1.5);
 title('Channel Impulse Response', 'FontSize', 12, 'FontWeight', 'bold');
 xlabel('Tap Index (spaced by bit duration T)', 'FontSize', 11);
@@ -371,7 +367,7 @@ ylabel('Amplitude', 'FontSize', 11);
 grid on;
 
 %  Magnitude and Phase Response
-% We use the original h_taps (NOT upsampled) as per the implementation note
+% We use the original h_taps
 [H, w] = freqz(h_taps, 1, 1024); % 1024 points for a smooth curve
 
 % Magnitude Plot
@@ -422,14 +418,14 @@ for i = 1:length(noise_variances)
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
     
-    % 1. Generate and Add Noise
+    % generating and adding noise
     n_hs = std_dev * randn(size(channel_output_eye_half_sine));
     n_srrc = std_dev * randn(size(channel_output_eye_srrc));
     
     rx_hs = channel_output_eye_half_sine + n_hs;
     rx_srrc = channel_output_eye_srrc + n_srrc;
     
-    % 2. Plot Half-Sine (Left Column)
+    % plotting half sine (left column)
     subplot(3, 2, 2*i - 1);
     % Start index shifted by half_symbol to center the opening
     start_idx_hs = offset_half_sine + half_symbol;
@@ -437,7 +433,7 @@ for i = 1:length(noise_variances)
     title(sprintf('Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
     grid on; ylabel('Amplitude');
     
-    % 3. Plot SRRC (Right Column)
+    % plotting SRRC (right column)
     subplot(3, 2, 2*i);
     % Start index shifted by half_symbol to center the opening
     start_idx_srrc = offset_srrc + half_symbol;
@@ -463,28 +459,28 @@ fullPath = fullfile(targetDir, 'Combined_Noise_Analysis.jpg');
 noise_variances = [0.00, 0.005, 0.02]; 
 sps = 32;
 
-% Create figure for Time/Freq plots
+% creating figure for Time/Freq plots
 figQ8 = figure('Name', 'Q8: Matched Filter Time/Freq Analysis', 'Position', [100, 100, 1200, 1000]);
 
 for i = 1:length(noise_variances)
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
     
-    % Add Noise and Apply Matched Filter
+    % adding noise and applying matched filter
     rx_hs_noisy = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
     rx_srrc_noisy = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
     
     mf_hs = conv(rx_hs_noisy, flip(y), 'full'); 
     mf_srrc = conv(rx_srrc_noisy, flip(s), 'full');
     
-    % 2. Plot Time Domain (Left Column)
+    % plotting time domain (left column)
     subplot(3, 2, 2*i - 1);
     plot(mf_hs(1:sps*20), 'b'); hold on;
     plot(mf_srrc(1:sps*20), 'r--');
     title(sprintf('Time Domain (\\sigma^2 = %.3f)', sig_pwr));
     legend('HS', 'SRRC'); grid on; ylabel('Amplitude');
     
-    %Plot Frequency Domain (Right Column)
+    %plotting frequwnxt domain (right column)
     subplot(3, 2, 2*i);
     L = 1024;
     f = (0:L/2-1) * (sps/L);
@@ -512,14 +508,14 @@ for i = 1:length(noise_variances)
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
     
-    % 1. Re-generate filtered signals
+    % regenerating filtered signals
     rx_hs = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
     rx_srrc = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
     
     mf_hs = conv(rx_hs, flip(y), 'full');
     mf_srrc = conv(rx_srrc, flip(s), 'full');
     
-    % 2. Plot Matched Filter Eye - Half-Sine (Left Column)
+    % plotting half sine matched filter eye (left column)
     subplot(3, 2, 2*i - 1);
     start_hs = offset_half_sine + half_symbol;
     % Reshape into segments ofq*sps to show q-bit duration
@@ -528,7 +524,7 @@ for i = 1:length(noise_variances)
     title(sprintf('MF Eye: Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
     grid on; ylabel('Amplitude');
     
-    % 3. Plot Matched Filter Eye - SRRC (Right Column)
+    % plotting SRRC matched filter eye (right column)
     subplot(3, 2, 2*i);
     start_srrc = offset_srrc + half_symbol;
     eye_srrc = reshape(mf_srrc(start_srrc : start_srrc + (sps*40)-1), sps, []);
@@ -550,17 +546,17 @@ for i = 1:length(noise_variances)
     sig_pwr = noise_variances(i);
     std_dev = sqrt(sig_pwr);
     
-    % 1. Re-generate filtered signals
+    % regenerating filtered signals
     rx_hs = channel_output_eye_half_sine + (std_dev * randn(size(channel_output_eye_half_sine)));
     rx_srrc = channel_output_eye_srrc + (std_dev * randn(size(channel_output_eye_srrc)));
     
     mf_hs = conv(rx_hs, y, 'same'); % Matched filter convulution must stay centered, so we use same
     mf_srrc = conv(rx_srrc, s, 'same');
     
-    % 2. Plot Matched Filter Eye - Half-Sine (Left Column)
+    % plotting half sine matched filter eye (left column)
     subplot(3, 2, 2*i - 1);
     start_hs = offset_half_sine + half_symbol;
-    % Reshape into segments of 2*sps to show 2-bit duration
+    % reshaping into segments of 2*sps to show 2-bit duration
     eye_hs = reshape(mf_hs(start_hs : start_hs + (sps*2*40)-1), sps*2, []);
     plot(eye_hs, 'b');
     title(sprintf('MF Eye: Half-Sine (\\sigma^2 = %.3f)', sig_pwr));
@@ -957,14 +953,14 @@ fprintf('Full simulation complete. Results saved to imgs/Q14/Final_Result.jpg\n'
 %% Q15: Critical SNR Threshold Discovery
 fprintf('\n--- Running Q15: SNR Threshold Analysis ---\n');
 snr_db_range = 0:2:20; % SNR in dB
-noise_vars_q15 = 10.^(-snr_db_range/10);
+noise_vars_q15 = 10.^((-1 .* snr_db_range) ./ 10);
 ber_zf = zeros(size(snr_db_range));
 ber_mmse = zeros(size(snr_db_range));
 
 % Use SRRC for this test
 pulse_q15 = s; 
 tx_bits_q15 = binary_data(1:10000); % Test on a subset for speed
-tx_symbols_q15 = 2 * tx_bits_q15 - 1;
+tx_symbols_q15 = 2 .* tx_bits_q15 - 1;
 upsampled_tx_q15 = upsample(tx_symbols_q15, sps);
 tx_sig_q15 = conv(upsampled_tx_q15, pulse_q15, 'full');
 chan_out_q15 = conv(tx_sig_q15, h_vector, 'full');
@@ -974,7 +970,7 @@ for i = 1:length(snr_db_range)
     rx_noisy = chan_out_q15 + sqrt(sig_pwr) * randn(size(chan_out_q15));
     
     % ZF
-    mf_zf = conv(rx_noisy, flip(pulse_q15), 'same');
+    mf_zf = conv(rx_noisy,rx_noisy, 'same'); %use the convoluted signal, not the original pulse
     eq_zf = filter(1, h_upsampled, mf_zf);
     det_zf = double(eq_zf(1:sps:end) > 0);
     ber_zf(i) = sum(tx_bits_q15(:) ~= det_zf(1:length(tx_bits_q15))) / length(tx_bits_q15);
@@ -982,7 +978,7 @@ for i = 1:length(snr_db_range)
     % MMSE
     Q_f = conj(H_f_eq) ./ (abs(H_f_eq).^2 + sig_pwr + eps);
     q_t = fftshift(real(ifft(Q_f)));
-    eq_mmse = conv(rx_noisy, q_t, 'same');
+    eq_mmse = conv(mf_zf, q_t, 'same');
     det_mmse = double(eq_mmse(1:sps:end) > 0);
     ber_mmse(i) = sum(tx_bits_q15(:) ~= det_mmse(1:length(tx_bits_q15))) / length(tx_bits_q15);
 end

@@ -202,6 +202,27 @@ The result grid below showcases how each component contributes to the final imag
 
 ![](./imgs/Q14/Final_Result.jpg)
 
+Bit Error Rates across implementation methods and noises:
+
+BER [HS + ZF, n=0.000]: 0.0000e+00
+BER [HS + MMSE, n=0.000]: 1.9021e-02
+BER [SRRC + ZF, n=0.000]: 0.0000e+00
+BER [SRRC + MMSE, n=0.000]: 1.9021e-02
+BER [HS + ZF, n=0.005]: 1.8255e-03
+BER [HS + MMSE, n=0.005]: 9.0888e-04
+BER [SRRC + ZF, n=0.005]: 1.7225e-03
+BER [SRRC + MMSE, n=0.005]: 8.9478e-04
+BER [HS + ZF, n=0.020]: 7.3055e-02
+BER [HS + MMSE, n=0.020]: 7.7311e-06
+BER [SRRC + ZF, n=0.020]: 7.1781e-02
+BER [SRRC + MMSE, n=0.020]: 8.0024e-06
+BER [HS + ZF, n=0.050]: 1.7964e-01
+BER [HS + MMSE, n=0.050]: 4.0826e-05
+BER [SRRC + ZF, n=0.050]: 1.7812e-01
+BER [SRRC + MMSE, n=0.050]: 4.4759e-05
+
+Never does our implementation eclipse 17% bit error rate - this maximum error rate is the result of the high noisy signal being equalized with the zero-forcing equalizer! 
+
 ##### Key Observations:
 
 Overall, MMSE equalizer has much better performance as the noise level increases throughout the trials. With lower noise there is little difference (if any the MMSE is worse), however the special effects of the MMSE is shown when the noise levels are increased and there are less bit errors. For difference in pulses there seems to be little if any difference in the behavoir between the pulse shapes. The outcome of each image is almost entirely the same.
