@@ -249,7 +249,6 @@ From the image above we can see that the effects on the new image is almost iden
 
 #### Q17: Nyquist Criterion and Zero ISI
 
-
 Again, from Q9, here is the eye diagram of both pulses across noise environments: 
 
 **Matched Filter Output Eye Diagram**
