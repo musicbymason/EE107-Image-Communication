@@ -154,7 +154,7 @@ The channel's inverse is not always guaranteed to be stable - at certain discret
 
 #### Q11: Zero-Forcing (ZF) Equalizer Eye Diagrams
 
-The following unified figure shows the eye diagrams for both half sine and SRRC pulse shapes after Zero-Forcing equalization across different noise levels ($\sigma^2 = 0, 0.005, 0.02$):
+The following figure shows the eye diagrams for both half sine and SRRC pulse shapes after Zero-Forcing equalization across different noise levels ($\sigma^2 = 0, 0.005, 0.02$):
 
 ![](./imgs/Q11/ZF_Eyes_Combined.jpg)
 
@@ -168,13 +168,13 @@ These results are an updated graph to show the progess of our information along 
 
 #### Q12 The MMSE Equalizer 
 
-To compute the MMSE filter, we did most of the math in the frequency domain. By utilizing the FFT and the frequency math to get the equation for the MMSE. Then, we took the ifft of the frequency response to get the impulse response of the filter. Finally, to get the final output of the filter, we convolved the impulse response of the filter with the output of the channel to get the final output of the filter.
+To compute the MMSE filter, we did most of the math in the frequency domain. By utilizing the FFT and the frequency math to get the equation for the MMSE. Then, we took the IFFT of the frequency response to get the impulse response of the filter. Finally, to get the final output of the filter, we convolved the impulse response of the filter with the output of the channel to get the final output of the filter.
 
 ![](./imgs/Q12/MMSE_freq.jpg)
 
-The Zero-Forcing equalizer tries to perfectly invert the channel, but it doesn't go so well because it creates echoes and long messy tails in the impulse response. Because it ignores noise, it amplifies interference at frequencies where the channel is weak, leading to a cluttered output.
+The Zero-Forcing equalizer tries to perfectly invert the channel, but it doesn't go so well because it creates echoes and long  tails in the impulse response. Because it ignores noise, it amplifies interference at frequencies where the channel is weak, leading to a cluttered output.
 
-The MMSE equalizer is much better because it fixes the channel and supresses noise. Its impulse response shows only the essential spikes—one to capture the main signal and another to cancel the primary echo (at 33 samples). So, the MMSE eye diagrams is more open and stable as the noise increases compared to the ZF results.
+The MMSE equalizer is much better because it fixes the channel and supresses noise. Its impulse response shows only the essential spikes-one to capture the main signal and another to cancel the primary echo (at 33 samples). So, the MMSE eye diagrams is more open and stable as the noise increases compared to the ZF results.
 
 #### Q13: The MMSE Equalizer Eye Diagrams  
 
@@ -204,15 +204,15 @@ The result grid below showcases how each component contributes to the final imag
 
 ##### Key Observations:
 
-Overall, MMSE equalizer has a clearer and much better performance as the noise level increases throughout the trials. With lower noise there is little difference (if any the MMSE is worse), however the special effects of the MMSE is shown when the noise levels are increased and there are less bit errors. For difference in pulses there seems to be little if any difference in the behavoir between the pulse shapes. The outcome of each image is almost entirely the same.
+Overall, MMSE equalizer has much better performance as the noise level increases throughout the trials. With lower noise there is little difference (if any the MMSE is worse), however the special effects of the MMSE is shown when the noise levels are increased and there are less bit errors. For difference in pulses there seems to be little if any difference in the behavoir between the pulse shapes. The outcome of each image is almost entirely the same.
 
 <div class="page-break"></div>
 
 #### Q15: Critical SNR Thresholds
 
-Half Sine: The critical SNR threshold is the point where the Bit Error Rate (BER) becomes high enough to visibly degrade the reconstructed image is when the noise variance = 0.005 . Since we have normalized the power of the signal to be 1, the SNR = Psig/Pnoise = 1/0.005. In dB this equates to 23dB.
+Half sine: The critical SNR threshold is the point where the Bit Error Rate (BER) becomes high enough to visibly degrade the reconstructed image is when the noise variance = 0.005. Since we have normalized the power of the signal to be 1, the SNR = Psig/Pnoise = 1/0.005. In dB this equates to 23dB.
 
-SRRC: The critical SNR threshold is the point where the Bit Error Rate (BER) becomes high enough to visibly degrade the reconstructed image is when the noise variance = 0.05 . Since we have normalized the power of the signal to be 1, the SNR = Psig/Pnoise = 1/0.05. In dB this equates to 13dB.
+SRRC: The critical SNR threshold is the point where the Bit Error Rate (BER) becomes high enough to visibly degrade the reconstructed image is when the noise variance = 0.05. Since we have normalized the power of the signal to be 1, the SNR = Psig/Pnoise = 1/0.05. In dB this equates to 13dB.
 
 Here is the BER vs SNR graph for the ZF and MMSE equalizers:
 
@@ -251,10 +251,10 @@ We used the images that were produced for Q14. At a σ^2 of 0.005 (with all othe
 
 #### Q19: Bandwidth and Pulse Length
 
-From the frequency response plots in question 1 and the modulated signal spectra in question 3, we can see that the half sine pulse has a higher bandiwth with many sidelobes being far beyond the main lobe. The SRRC pulse, however, has its sidelobes closer to the main lobe and has a smaller bandwidth. The half sine pulse only happens for one period so since its short in the time domain, its extends a lot in the frequency domain. The SRRC is wider in time and more compact in the frequency domain due to it spanning more time intervals of each transmitted symbol. The SRRC is more bandwidth efficient because of the smaller bandiwdth and because it reduces the components that are out of the frequency range we are looking at. This is good since the bandwidth is limited in our case. But, the longer duration of the SRRC causes more symbol overlap which could lead to  higher ISI.
+From the frequency response plots in question 1 and the modulated signal spectra in question 3, we can see that the half sine pulse has a higher bandiwth with many sidelobes existing far beyond the main lobe. The SRRC pulse, however, has its sidelobes closer to the main lobe and has a smaller bandwidth. The half sine pulse only happens for one period so since its short in the time domain, its extends a lot in the frequency domain. The SRRC is wider in time and more compact in the frequency domain due to it spanning more time intervals of each transmitted symbol. The SRRC is more bandwidth efficient because of the smaller bandiwdth and because it reduces the components that are out of the frequency range we are looking at. This is good since the bandwidth is limited in our case. But, the longer duration of the SRRC causes more symbol overlap which could lead to higher ISI.
 
 #### Q20: Conclusion on Pulse Shaping
-Overall, as expected, given what we learned in class, the SRRC outperforms the half sine pulse in image reconstruction, although it's pretty close. The SRRC + MMSE gave the best results. The main drawbacks of the SRRC (as discussed in question 19) is that it is longer in time. The SRRC pulse spans across many bit durations so it causes more pulse overlap at the transmitter and makes sampling more sensitive. It is also nore complex to implement than the half-sine. But, the SRRC gives better bandwidth control and is more robust to noise (emphasesized by our results). 
+Overall, as expected, given what we learned in class, the SRRC outperforms the half sine pulse in image reconstruction, although they perform pretty similarly. The SRRC used in conjunction with the MMSE equalizer gave the best results. The main drawbacks of the SRRC (as discussed in question 19) is that it is longer in time. The SRRC pulse spans across many more bit durations than the input bit stream, so it causes more pulse overlap at the transmitter and makes sampling more sensitive. It is also nore complex to implement than the half-sine. However, the SRRC gives better bandwidth control and is more robust to noise (proved by our results). This advantage propels the SRRC pulse as the better pulse shaping option. 
 
 #### Q21: Performance Under New Channels
 The communication system did not work seamlessly when we plugged in the new channels. The image is barely recognizable for both channels but some information is still there. There is a lot of noise in both images and visible reconstruction errors.
@@ -299,5 +299,5 @@ $$
 
 ![](./imgs/Q21/Recovered_Indoor.jpg)
 
-The outdoor channel has a higher power gain. However, the autdoor channel has worse image quality because its energy is spread across longer delays which creates more ISI, while the indoor channel's energy is concetrated around the concise delays so the recovered image is better.
+The outdoor channel has a higher power gain. However, the outdoor channel has worse image quality because its energy is spread across longer delays which creates more ISI, while the indoor channel's energy is concetrated around the concise delays, so the recovered image is better.
 
