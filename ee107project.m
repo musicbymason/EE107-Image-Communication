@@ -844,16 +844,11 @@ for i = 1:num_vars
     grid on;
 end
 
-% =====================================================================
-% Final Formatting and Export
-% =====================================================================
 figure(figQ13); 
 
-% FIX: Dynamically assign x-labels to only the bottom-most plots
 subplot(num_vars, 2, num_vars*2 - 1); xlabel('Samples (2 Symbol Periods)');
 subplot(num_vars, 2, num_vars*2); xlabel('Samples (2 Symbol Periods)');
 
-% Optional: Ensure directories exist before exporting
 if ~exist('imgs/Q13', 'dir'), mkdir('imgs/Q13'); end
 
 exportgraphics(figQ13, 'imgs/Q13/MMSE_eye.jpg', 'Resolution', 300);

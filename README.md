@@ -22,7 +22,6 @@ Here are the time-domain plots
 **SRRC Wave:** 
 ![](./imgs/Q1/Q1_tk3.jpg)
 
-
 And the frequency domain dB plots:
 
 ![](./imgs/Q1/Q1_fsrrc.jpg)
@@ -111,7 +110,7 @@ The SRRC eye diagram looks somewhat closed at the transmitter output because an 
 
 ![](./imgs/Q6/After_Channel_Eye_SRRC.jpg)
 
-The eye diagrams at the channel output is more closed compared to the original transmitted signals, a  result of ISI introduced by the channel’s impulse response. Because the channel acts as a non-ideal filter, it causes the energy of each individual pulse to spread into adjacent bit periods, destroying the zero-crossing properties of the original half sine and SRRC shapes.
+The eye diagrams at the channel output is more closed compared to the original transmitted signals, a  result of ISI introduced by the channel's impulse response. Because the channel acts as a non-ideal filter, it causes the energy of each individual pulse to spread into adjacent bit periods, destroying the zero-crossing properties of the original half sine and SRRC shapes.
 
 #### Q7: Noisy Eye Diagram of Channel Output
 
@@ -183,7 +182,7 @@ The MMSE equalizer is much better because it fixes the channel and supresses noi
 
 At σ² = 0, both pulse shapes have an open eye, with the half-sine appearing more tightly clustered while the SRRC is more spread out due to its longer pulse duration and overlap. Even in the noiseless case, the SRRC traces are less compact, which means there's more residual ISI, but both still have a visible sampling point. As noise increases to σ² = 0.005 and 0.020, the eye openings begin to close for both pulses, but the traces remain bounded, indicating that the MMSE equalizer is limiting noise amplification.
 
-**MMSE Time Domain Output:**
+**MMSE Time Domain Output (10-bit stream):**
 
 ![](./imgs/Q13/MMSE_time_10bit.jpg)
 
@@ -217,7 +216,7 @@ SRRC: The critical SNR threshold is the point where the Bit Error Rate (BER) bec
 
 Here is the BER vs SNR graph for the ZF and MMSE equalizers:
 
-![](./imgs/Q15/Q15_BER_Curves.jpg) JACOB THINKS THis GRAPH is WRONG
+![](./imgs/Q15/Q15_BER_Curves.jpg)
 
 #### Q16: Performance on Different Images
 
