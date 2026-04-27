@@ -107,7 +107,7 @@ Increasing K does not change the bandwidth of the SRRC pulse, since bandwidth is
 
 With a random 10 bit stream, below are the time domain modulations using both the half-sine pulse and SRRC pulse:
 
-![](./imgs/Q2/Q2_mod.jpg) THIS IS THE WRONG PLOT BUT I DONT GOT TIME TO FIX IT, GOTTA MAKE DINNER
+![](./imgs/Q2/Q2_mod.jpg)
 
 **Half-Sine Observations:** In the top plot, the half-sine modulated signal is distinct, non-overlapping half-periods of a sine wave. Because the half-sine pulse is strictly defined to exist only between $0 \le t \le 1$ bit duration, each pulse begins exactly where the previous one ends. The pulse being time-limited at the transmitter means that there is zero overlap between adjacent symbols.
 
@@ -267,7 +267,7 @@ SRRC: The critical SNR threshold is the point where the Bit Error Rate (BER) bec
 
 Here is the BER vs SNR graph for the ZF and MMSE equalizers:
 
-![](./imgs/Q15/Q15_BER_Curves.jpg)
+![](./imgs/Q15/Q15_BER_Curves.jpg) JACOB THINKS THis GRAPH is WRONG
 
 #### Q16: Performance on Different Images
 
@@ -279,7 +279,6 @@ From the image above we can see that the effects on the new image is almost iden
 
 #### Q17: Nyquist Criterion and Zero ISI
 
-PLOT THE OUTPUT OF THE MATCHED FILTER FOR BOTH PULSES FIRST:
 
 Again, from Q9, here is the eye diagram of both pulses across noise environments: 
 

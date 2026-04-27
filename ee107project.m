@@ -622,16 +622,12 @@ ylabel('Amplitude');
 %Eye diagram for both pulse shapes after ZF equalization with no noise, with medium noise, and with heavy noise.
 noise_labels = {'No Noise', 'Little Noise', 'Heavy Noise'};
 
-% FIX: Assign the newly created figure to the variable 'figure_zf_10bit'
 figure_zf_10bit = figure('Name', 'Q11: ZF Time-Domain Output (10-bit stream)', 'Position', [150, 150, 800, 1000]); 
 
-% ADDED: Unified figure for all eye diagrams to make them more compact
 figQ11_Eyes = figure('Name', 'Q11: ZF Equalized Eye Diagrams', 'Position', [100, 100, 1000, 1200]);
 
-% FIX: Dynamically track how many noise variances there are to prevent subplot crashing
 num_vars = length(noise_variances); 
 
-% PRE-COMPUTE: Noise-free channel outputs (10-bit stream) that don't change across noises
 q11_hs_channel_out = conv(modulated_half_sine, h_vector, 'full');
 q11_srrc_channel_out = conv(modulated_srrc, h_vector, 'full');
 
@@ -691,7 +687,7 @@ for i = 1:num_vars
     zf_out_srrc_10bit = filter(b_zf, a_zf, mf_out_srrc_10bit);
 
     % Draw the subplots on the active figure_zf_10bit window
-    % FIX: Use dynamic num_vars for the subplot calculation
+
     subplot(num_vars, 1, i);
 
 % Create dedicated time vectors for both signals
@@ -713,13 +709,13 @@ for i = 1:num_vars
     ylabel('Amplitude'); xlabel('Time (Bit Durations)');
     grid on; xlim([-1 11]); ylim([-1.5 1.5]);
 end
-% exportgraphics(figure_zf_10bit, 'imgs/Q11/ZF_time_10bit.jpg', 'Resolution', 300);
+exportgraphics(figure_zf_10bit, 'imgs/Q11/ZF_time_10bit.jpg', 'Resolution', 300);
 
 % Format and Export the unified Eye Diagram figure for Q11
 figure(figQ11_Eyes);
 subplot(num_vars, 2, num_vars*2 - 1); xlabel('Samples (2 Symbol Periods)');
 subplot(num_vars, 2, num_vars*2); xlabel('Samples (2 Symbol Periods)');
-% exportgraphics(figQ11_Eyes, 'imgs/Q11/ZF_Eyes_Combined.jpg', 'Resolution', 300);
+exportgraphics(figQ11_Eyes, 'imgs/Q11/ZF_Eyes_Combined.jpg', 'Resolution', 300);
 
 %Q12 - MMSE Equalizer Implementation and Impulse/Frequency plots accross all 3 noise cases
 % Parameters
@@ -755,7 +751,7 @@ for i = 1:length(noise_variances)
     if i == 3, xlabel('Frequency (Hz)'); end
 end
 
-%exportgraphics(gcf, 'imgs/Q12/MMSE_freq.jpg', 'Resolution', 300);
+exportgraphics(gcf, 'imgs/Q12/MMSE_freq.jpg', 'Resolution', 300);
 
 %Q13 - Eye diagrams for both pulse shapes after MMSE equalization with no noise, with medium noise, and with heavy noise.
 % Setup figures BEFORE the loop
@@ -826,9 +822,7 @@ for i = 1:num_vars
     grid on; xlim([-1 11]); ylim([-1.5 1.5]);
     hold off;
     
-    % =====================================================================
     % PLOT 2: EYE DIAGRAMS (1000-bit stream)
-    % =====================================================================
     figure(figQ13);
     
     % FIX: Use dynamic subplot layout
@@ -1012,7 +1006,7 @@ semilogy(snr_db_range, ber_zf, 'o-', 'DisplayName', 'ZF'); hold on;
 semilogy(snr_db_range, ber_mmse, 's-', 'DisplayName', 'MMSE');
 grid on; xlabel('SNR (dB)'); ylabel('BER');
 title('Bit Error Rate Comparison'); legend;
-%exportgraphics(figQ15, 'imgs/Q15/Q15_BER_Curves.jpg');
+exportgraphics(figQ15, 'imgs/Q15/Q15_BER_Curves.jpg');
 
 %% Q16: Performance on Different Images
 % We already used macjones.jpg. 
@@ -1060,12 +1054,11 @@ for c = 1:2
     
     figure; imshow(recovered_img_q21);
     title(sprintf('Recovered Image: %s Channel', chan_names{c}));
-    % exportgraphics(gcf, sprintf('imgs/Q21/Recovered_%s.jpg', chan_names{c}));
+    exportgraphics(gcf, sprintf('imgs/Q21/Recovered_%s.jpg', chan_names{c}));
     
     % Power gain
     power_gain = sum(abs(h_taps_new).^2);
     fprintf('%s Channel Power Gain: %.4f\n', chan_names{c}, power_gain);
 end
-
 close all; % Close all figures to free up memory
 
