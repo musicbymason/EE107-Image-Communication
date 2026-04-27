@@ -241,11 +241,11 @@ This behavior is consistent in the aligned time-domain outputs. At σ² = 0, bot
 
 #### Q14: Final Image Transmission Comparison
 
-Below is the **grayscale reference image** that is actually processed and transmitted through the system (after 8x8 DCT block processing and bit conversion):
+Below is the **grayscale reference image** that is processed and transmitted through the system (after 8x8 DCT block processing and bit conversion):
 
 ![Grayscale Reference](./imgs/Q14/Reference_Gray.jpg)
 
-To comprehensively evaluate our system, we simulated the transmission of the full image across all combinations of pulse shaping (Half-Sine vs. SRRC), equalization (Zero-Forcing vs. MMSE), and noise levels ($\sigma^2 \in \{0.00, 0.005, 0.02, 0.05\}$).
+To evaluate our system, we simulated the transmission of the full image across all combinations of pulse shaping (half sine vs. SRRC), equalization (Zero-Forcing vs. MMSE), and noise levels ($\sigma^2 \in \{0.00, 0.005, 0.02, 0.05\}$).
 
 The result grid below showcases how each component contributes to the final image quality:
 
@@ -273,7 +273,7 @@ Below are the results for doing the same analysis and modulation on a picture of
 
 ![](./imgs/Q16/Final_Result.jpg)
 
-From the image above we can clearly see that the effects on the new image is almost identical as to the original image of Mac Jones. The difference between the two pulses and the two different equalizers are the same variance as it was in the first test of Mac. We can see that as the noise increased the MMSE equalizer has a vastly better effect on handling the noise and having a much clearer output. As for the pulse shape, the results (just like the original image) are almost identical to each other. It seems that pulse shape has no difference when simulated from our simulation results.
+From the image above we can see that the effects on the new image is almost identical as to the original image of Mac Jones. The difference between the two pulses and the two different equalizers are the same variance as it was in the first test of Mac. We can see that as the noise increased the MMSE equalizer has a vastly better effect on handling the noise and having a much clearer output. As for the pulse shape, the results (just like the original image) are almost identical to each other. It seems that pulse shape has no difference when simulated from our simulation results.
 
 #### Q17: Nyquist Criterion and Zero ISI
 
