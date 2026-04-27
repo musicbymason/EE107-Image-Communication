@@ -273,7 +273,7 @@ Here is the BER vs SNR graph for the ZF and MMSE equalizers:
 
 Below are the results for doing the same analysis and modulation on a picture of Raven's QB Lamar Jackson:
 
-![](./imgs/Q16/Final_Result.jpg)
+![](./imgs/Q16/Final_Result_lamar.jpg)
 
 From the image above we can see that the effects on the new image is almost identical as to the original image of Mac Jones. The difference between the two pulses and the two different equalizers are the same variance as it was in the first test of Mac. We can see that as the noise increased the MMSE equalizer has a vastly better effect on handling the noise and having a much clearer output. As for the pulse shape, the results (just like the original image) are almost identical to each other. It seems that pulse shape has no difference when simulated from our simulation results.
 

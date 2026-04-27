@@ -275,16 +275,16 @@ sps = 32; % 32 Samples for both the half sine and SRRC
 T = 1;    % Duration in seconds
 %y is our time domain half-sine pulse with 32 samples for 0 <= t < 1
 y = half_sine_pulse(sps, T); %designs and then plots the half sine pulse in time and frequency domain
-% exportgraphics(figure(1), 'imgs/Q1/Q1_thalfsine.jpg', 'Resolution', 300);
-% exportgraphics(figure(2), 'imgs/Q1/Q1_fhalfsine.jpg', 'Resolution', 300);
+exportgraphics(figure(1), 'imgs/Q1/Q1_thalfsine.jpg', 'Resolution', 300);
+exportgraphics(figure(2), 'imgs/Q1/Q1_fhalfsine.jpg', 'Resolution', 300);
 
 %SRRC
 alpha = 0.5;
 k = 6;
 %s is our time domain SRRC pulse with 32 samples per bit, and a total duration of 2*K bit times
 s = srrc_pulse(alpha, k, sps); %designs and then plots the SRRC pulse in time and frequency domain
-% exportgraphics(figure(3), 'imgs/Q1/Q1_tsrrc.jpg', 'Resolution', 300);
-% exportgraphics(figure(4), 'imgs/Q1/Q1_fsrrc.jpg', 'Resolution', 300);
+exportgraphics(figure(3), 'imgs/Q1/Q1_tsrrc.jpg', 'Resolution', 300);
+exportgraphics(figure(4), 'imgs/Q1/Q1_fsrrc.jpg', 'Resolution', 300);
 
 %------------QUESTION 2 & 3 MODULATED SIGNALS PLOT 10 RANDOM BITS----------------
 
@@ -292,8 +292,8 @@ s = srrc_pulse(alpha, k, sps); %designs and then plots the SRRC pulse in time an
 [unsampled_symbols, modulated_half_sine, modulated_srrc] = rand_bit_modulation(sps, k, s, y); 
 %unsampled_symbols is the original 10 random bits mapped to PAM symbols and upsampled (with zeros in between)
 %modulated_half_sine and modulated_srrc are the convolution of the upsampled symbols with the pulses
-% exportgraphics(figure(5), 'imgs/Q2/Q2_mod.jpg', 'Resolution', 300);
-% exportgraphics(figure(6), 'imgs/Q3/Q3_spectra.jpg', 'Resolution', 300);
+exportgraphics(figure(5), 'imgs/Q2/Q2_mod.jpg', 'Resolution', 300);
+exportgraphics(figure(6), 'imgs/Q3/Q3_spectra.jpg', 'Resolution', 300);
 
 %-------------------------------------QUESTION 4 EYE DIAGRAM---------------------------------------
 
@@ -804,9 +804,7 @@ for i = 1:num_vars
     mmse_out_hs_10bit = conv(rx_hs_10bit, q_t, 'same');
     mmse_out_srrc_10bit = conv(rx_srrc_10bit, q_t, 'same');
 
-    % =====================================================================
     % PLOT 1: TIME DOMAIN OUTPUTS (10-bit stream)
-    % =====================================================================
     figure(figTime_MMSE_10bit);
     subplot(num_vars, 1, i);
     
@@ -1046,7 +1044,7 @@ for c = 1:2
     upsampled_tx = upsample(tx_symbols, sps);
     tx_signal = conv(upsampled_tx, s, 'same');
     
-    channel_out_q21 = conv(tx_signal, h_vec_new, 'same')
+    channel_out_q21 = conv(tx_signal, h_vec_new, 'same');
 
     rx_q21 = channel_out_q21 + (sqrt(sig_pwr_q21) * randn(size(channel_out_q21)));
     
